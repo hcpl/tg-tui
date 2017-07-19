@@ -1,5 +1,5 @@
 [package]
-name = "tgr"
+name = "tg-tui"
 version = "0.1.0"
 authors = ["hcpl <hcpl.prog@gmail.com>"]
 
