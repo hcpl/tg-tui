@@ -1,0 +1,8 @@
+[package]
+name = "tgr"
+version = "0.1.0"
+authors = ["hcpl <hcpl.prog@gmail.com>"]
+
+[dependencies]
+cursive = { git = "https://github.com/gyscos/Cursive" }
+time = "0.1.38"
