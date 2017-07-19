@@ -30,10 +30,12 @@ fn custom_theme() -> Theme {
     }
 }
 
-fn create_status_bar() -> IdView<TextView> {
-    let time = time::now();
+fn now() -> String {
+    time::strftime("%H:%M:%S", &time::now()).unwrap()
+}
 
-    let status_bar = TextView::new(format!("{}", time.strftime("%H:%M:%S").unwrap())).with_id("status bar");
+fn create_status_bar() -> IdView<TextView> {
+    let status_bar = TextView::new(now()).with_id("status bar");
 
     status_bar
 }
@@ -52,14 +54,12 @@ fn main() {
 
     siv.set_theme(custom_theme());
     siv.add_global_callback('q', |s| s.quit());
-    //siv.add_fullscreen_layer(TextView::new("Hello cursive!"));
-    //siv.add_fullscreen_layer(BoxView::with_full_screen(TextView::new("Hello cursive!")));
     siv.add_fullscreen_layer(BoxView::with_full_screen(create_layout()));
 
     siv.set_fps(1);
     siv.add_global_callback(Event::Refresh, |s| {
         s.call_on_id("status bar", |v: &mut IdView<TextView>| {
-            v.get_mut().set_content(time::now().strftime("%H:%M:%S").unwrap().to_string());
+            v.get_mut().set_content(now());
         });
     });
 
