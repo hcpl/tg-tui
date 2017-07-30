@@ -1,6 +1,7 @@
 use time::Tm;
 
 
+#[derive(Debug)]
 pub enum Action {
     Online {
         time: Tm,

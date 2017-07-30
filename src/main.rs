@@ -14,7 +14,6 @@ use cursive::views::{BoxView, Dialog, EditView, IdView, LinearLayout, TextArea, 
 use common::Action;
 use cursive_views::messages_view::MessagesView;
 
-
 fn custom_theme() -> Theme {
     Theme {
         shadow: false,
@@ -41,10 +40,18 @@ fn now() -> String {
 
 fn create_messages_display_area() -> BoxView<MessagesView> {
     BoxView::with_full_screen(MessagesView::new()
-        .action(Action::Message {
+        .action(Action::Online {
             time: time::now(),
             username: "foo".to_owned(),
-            text: "bar".to_owned(),
+        })
+        .action(Action::Offline {
+            time: time::now(),
+            username: "bar".to_owned(),
+        })
+        .action(Action::Message {
+            time: time::now(),
+            username: "deadbeef".to_owned(),
+            text: "hello tg-tui from deadbeef".to_owned(),
         }))
 }
 
