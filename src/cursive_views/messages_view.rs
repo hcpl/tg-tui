@@ -1,5 +1,6 @@
+use std::cmp;
+
 use cursive::{Printer, With};
-use cursive::direction::Direction;
 use cursive::vec::Vec2;
 use cursive::view::{ScrollBase, View};
 use time;
@@ -13,6 +14,7 @@ pub struct MessagesView {
     scrollbase: ScrollBase,
     focus: usize,
     rows: Option<Vec<String>>,
+    needs_relayout: bool,
 }
 
 impl MessagesView {
@@ -22,13 +24,14 @@ impl MessagesView {
             scrollbase: ScrollBase::new(),
             focus: 0,
             rows: None,
+            needs_relayout: false,
         }
     }
 
     pub fn add_action(&mut self, action: Action) {
         let msgs_view_child = MessagesViewChild::Action(action);
 
-        self.add_rows(&msgs_view_child);
+        self.needs_relayout = true;
         self.children.push(msgs_view_child);
     }
 
@@ -36,27 +39,51 @@ impl MessagesView {
         self.with(|s| s.add_action(action))
     }
 
-    fn add_rows(&mut self, msgs_view_child: &MessagesViewChild) {
-        let new_rows = match *msgs_view_child {
-            MessagesViewChild::Action(ref action) => match *action {
-                Action::Online { ref time, ref username } => {
-                    format!("{} --> | {} is online", strtime(time), username)
-                },
-                Action::Offline { ref time, ref username } => {
-                    format!("{} <-- | {} went offline", strtime(time), username)
-                },
-                Action::Message { ref time, ref username, ref text } => {
-                    format!("{} {} | {}", strtime(time), username, text)
-                },
-            },
-            MessagesViewChild::Delimiter => "".to_owned(),
-        };
+    pub fn add_delimiter(&mut self) {
+        self.children.push(MessagesViewChild::Delimiter);
+    }
 
-        if let Some(ref mut rows) = self.rows {
-            rows.push(new_rows);
-        } else {
-            self.rows = Some(vec![new_rows]);
-        }
+    pub fn delimiter(self) -> Self {
+        self.with(|s| s.add_delimiter())
+    }
+
+    fn compute_rows(&mut self, available_size: &Vec2) {
+        let max_second_column_width = self.children.iter()
+            .map(|msgs_view_child| match *msgs_view_child {
+                MessagesViewChild::Action(ref action) => match *action {
+                    Action::Online { ref username, .. } => username.len(),
+                    Action::Offline { ref username, .. } => username.len(),
+                    Action::Message { ref username, .. } => username.len(),
+                },
+                MessagesViewChild::Delimiter => 0,
+            })
+            .max()
+            .map(|m| cmp::max(m, 3))    // 3 for "-->" and "<--"
+            .unwrap_or(3);
+
+        let new_rows = self.children.iter()
+            .map(|msgs_view_child| match *msgs_view_child {
+                MessagesViewChild::Action(ref action) => match *action {
+                    Action::Online { ref time, ref username } => {
+                        format!("{} {:>width$} | {} is online",
+                            strtime(time), "-->", username, width=max_second_column_width)
+                    },
+                    Action::Offline { ref time, ref username } => {
+                        format!("{} {:>width$} | {} went offline",
+                            strtime(time), "<--", username, width=max_second_column_width)
+                    },
+                    Action::Message { ref time, ref username, ref text } => {
+                        format!("{} {:>width$} | {}",
+                            strtime(time), username, text, width=max_second_column_width)
+                    },
+                },
+                MessagesViewChild::Delimiter => {
+                    format!("{:->width$}", "", width=available_size.x)
+                }
+            })
+            .collect::<Vec<_>>();
+
+        self.rows = Some(new_rows);
     }
 }
 
@@ -76,6 +103,11 @@ impl View for MessagesView {
     }
 
     fn layout(&mut self, size: Vec2) {
+        if self.needs_relayout {
+            self.compute_rows(&size);
+            self.needs_relayout = false;
+        }
+
         let rows_len = match self.rows {
             Some(ref rows) => rows.len(),
             None           => 0,

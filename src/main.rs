@@ -52,7 +52,8 @@ fn create_messages_display_area() -> BoxView<MessagesView> {
             time: time::now(),
             username: "deadbeef".to_owned(),
             text: "hello tg-tui from deadbeef".to_owned(),
-        }))
+        })
+        .delimiter())
 }
 
 fn create_status_bar() -> IdView<TextView> {
