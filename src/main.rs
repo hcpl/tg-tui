@@ -2,13 +2,17 @@
 extern crate cursive;
 extern crate time;
 
-//mod cursive_views;
+mod cursive_views;
+mod common;
 
 use cursive::Cursive;
 use cursive::event::Event;
 use cursive::theme::{BorderStyle, BaseColor, Color, Palette, Theme};
 use cursive::view::Identifiable;
 use cursive::views::{BoxView, Dialog, EditView, IdView, LinearLayout, TextArea, TextView};
+
+use common::Action;
+use cursive_views::messages_view::MessagesView;
 
 
 fn custom_theme() -> Theme {
@@ -34,19 +38,38 @@ fn now() -> String {
     time::strftime("%H:%M:%S", &time::now()).unwrap()
 }
 
+
+fn create_messages_display_area() -> BoxView<MessagesView> {
+    BoxView::with_full_screen(MessagesView::new()
+        .action(Action::Message {
+            time: time::now(),
+            username: "foo".to_owned(),
+            text: "bar".to_owned(),
+        }))
+}
+
 fn create_status_bar() -> IdView<TextView> {
     let status_bar = TextView::new(now()).with_id("status_bar");
 
     status_bar
 }
 
+fn create_message_edit_area() -> LinearLayout {
+    let message_edit_area = LinearLayout::horizontal();
+
+    let initial_message_text = "message text";
+
+    message_edit_area
+        .child(BoxView::with_full_width(TextArea::new().content(initial_message_text)))
+}
+
 fn create_main_layout() -> LinearLayout {
     let layout = LinearLayout::vertical();
 
     layout
-        .child(BoxView::with_full_screen(TextView::new("messages")))
+        .child(create_messages_display_area())
         .child(create_status_bar())
-        .child(TextArea::new().content("message text"))
+        .child(create_message_edit_area())
 }
 
 
