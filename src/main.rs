@@ -65,9 +65,11 @@ fn create_status_bar() -> IdView<TextView> {
 fn create_message_edit_area() -> LinearLayout {
     let message_edit_area = LinearLayout::horizontal();
 
+    let prompt = "prompt";
     let initial_message_text = "message text";
 
     message_edit_area
+        .child(TextView::new(prompt))
         .child(BoxView::with_full_width(TextArea::new().content(initial_message_text)))
 }
 
