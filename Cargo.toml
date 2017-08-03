@@ -4,5 +4,7 @@ version = "0.1.0"
 authors = ["hcpl <hcpl.prog@gmail.com>"]
 
 [dependencies]
+app_dirs = "1.1.1"
+clap = "2.26.0"
 cursive = { git = "https://github.com/gyscos/Cursive" }
 time = "0.1.38"

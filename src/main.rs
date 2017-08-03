@@ -1,7 +1,10 @@
-#[macro_use(wrap_impl)]
+extern crate app_dirs;
+#[macro_use]
+extern crate clap;
 extern crate cursive;
 extern crate time;
 
+mod args;
 mod cursive_views;
 mod common;
 
@@ -96,6 +99,8 @@ fn create_authorization_dialog() -> Dialog {
 
 
 fn main() {
+    args::process_args();
+
     let mut siv = Cursive::new();
 
     siv.set_theme(custom_theme());
