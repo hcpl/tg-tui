@@ -2,11 +2,14 @@ extern crate app_dirs;
 #[macro_use]
 extern crate clap;
 extern crate cursive;
+#[macro_use]
+extern crate error_chain;
 extern crate time;
 
 mod args;
 mod cursive_views;
 mod common;
+mod error;
 
 use cursive::Cursive;
 use cursive::event::Event;
@@ -36,8 +39,8 @@ fn custom_theme() -> Theme {
     }
 }
 
-fn now() -> String {
-    time::strftime("%H:%M:%S", &time::now()).unwrap()
+fn now() -> error::Result<String> {
+    time::strftime("%H:%M:%S", &time::now()).map_err(Into::into)
 }
 
 
@@ -59,30 +62,30 @@ fn create_messages_display_area() -> BoxView<MessagesView> {
         .delimiter())
 }
 
-fn create_status_bar() -> IdView<TextView> {
-    let status_bar = TextView::new(now()).with_id("status_bar");
+fn create_status_bar() -> error::Result<IdView<TextView>> {
+    let status_bar = TextView::new(now()?).with_id("status_bar");
 
-    status_bar
+    Ok(status_bar)
 }
 
 fn create_message_edit_area() -> LinearLayout {
-    let message_edit_area = LinearLayout::horizontal();
-
     let prompt = "prompt";
     let initial_message_text = "message text";
 
-    message_edit_area
+    let message_edit_area = LinearLayout::horizontal()
         .child(TextView::new(prompt))
-        .child(BoxView::with_full_width(TextArea::new().content(initial_message_text)))
+        .child(BoxView::with_full_width(TextArea::new().content(initial_message_text)));
+
+    message_edit_area
 }
 
-fn create_main_layout() -> LinearLayout {
-    let layout = LinearLayout::vertical();
-
-    layout
+fn create_main_layout() -> error::Result<LinearLayout> {
+    let layout = LinearLayout::vertical()
         .child(create_messages_display_area())
-        .child(create_status_bar())
-        .child(create_message_edit_area())
+        .child(create_status_bar()?)
+        .child(create_message_edit_area());
+
+    Ok(layout)
 }
 
 
@@ -98,22 +101,26 @@ fn create_authorization_dialog() -> Dialog {
 }
 
 
-fn main() {
+fn run() -> error::Result<()> {
     args::process_args();
 
     let mut siv = Cursive::new();
 
     siv.set_theme(custom_theme());
     siv.add_global_callback('q', |s| s.quit());
-    siv.add_fullscreen_layer(BoxView::with_full_screen(create_main_layout()));
+    siv.add_fullscreen_layer(BoxView::with_full_screen(create_main_layout()?));
     siv.add_layer(create_authorization_dialog());
 
     siv.set_fps(1);
     siv.add_global_callback(Event::Refresh, |s| {
         s.call_on_id("status_bar", |v: &mut IdView<TextView>| {
-            v.get_mut().set_content(now());
+            v.get_mut().set_content(now().unwrap());
         });
     });
 
     siv.run();
+
+    Ok(())
 }
+
+quick_main!(run);

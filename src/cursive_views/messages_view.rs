@@ -6,6 +6,7 @@ use cursive::view::{ScrollBase, View};
 use time;
 
 use common::Action;
+use error;
 
 
 pub struct MessagesView {
@@ -47,7 +48,7 @@ impl MessagesView {
         self.with(|s| s.add_delimiter())
     }
 
-    fn compute_rows(&mut self, available_size: &Vec2) {
+    fn compute_rows(&mut self, available_size: &Vec2) -> error::Result<()> {
         let max_second_column_width = self.children.iter()
             .map(|msgs_view_child| match *msgs_view_child {
                 MessagesViewChild::Action(ref action) => match *action {
@@ -62,33 +63,39 @@ impl MessagesView {
             .unwrap_or(3);
 
         let new_rows = self.children.iter()
-            .map(|msgs_view_child| match *msgs_view_child {
-                MessagesViewChild::Action(ref action) => match *action {
-                    Action::Online { ref time, ref username } => {
-                        format!("{} {:>width$} | {} is online",
-                            strtime(time), "-->", username, width=max_second_column_width)
+            .map(|msgs_view_child| -> error::Result<String> {
+                let row = match *msgs_view_child {
+                    MessagesViewChild::Action(ref action) => match *action {
+                        Action::Online { ref time, ref username } => {
+                            format!("{} {:>width$} | {} is online",
+                                strtime(time)?, "-->", username, width=max_second_column_width)
+                        },
+                        Action::Offline { ref time, ref username } => {
+                            format!("{} {:>width$} | {} went offline",
+                                strtime(time)?, "<--", username, width=max_second_column_width)
+                        },
+                        Action::Message { ref time, ref username, ref text } => {
+                            format!("{} {:>width$} | {}",
+                                strtime(time)?, username, text, width=max_second_column_width)
+                        },
                     },
-                    Action::Offline { ref time, ref username } => {
-                        format!("{} {:>width$} | {} went offline",
-                            strtime(time), "<--", username, width=max_second_column_width)
-                    },
-                    Action::Message { ref time, ref username, ref text } => {
-                        format!("{} {:>width$} | {}",
-                            strtime(time), username, text, width=max_second_column_width)
-                    },
-                },
-                MessagesViewChild::Delimiter => {
-                    format!("{:->width$}", "", width=available_size.x)
-                }
+                    MessagesViewChild::Delimiter => {
+                        format!("{:->width$}", "", width=available_size.x)
+                    }
+                };
+
+                Ok(row)
             })
-            .collect::<Vec<_>>();
+            .collect::<error::Result<Vec<_>>>()?;
 
         self.rows = Some(new_rows);
+
+        Ok(())
     }
 }
 
-fn strtime(time: &time::Tm) -> String {
-    time::strftime("%H:%M:%S", time).unwrap()
+fn strtime(time: &time::Tm) -> error::Result<String> {
+    time::strftime("%H:%M:%S", time).map_err(Into::into)
 }
 
 impl View for MessagesView {
@@ -104,7 +111,7 @@ impl View for MessagesView {
 
     fn layout(&mut self, size: Vec2) {
         if self.needs_relayout {
-            self.compute_rows(&size);
+            self.compute_rows(&size).unwrap();
             self.needs_relayout = false;
         }
 

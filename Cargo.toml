@@ -7,4 +7,5 @@ authors = ["hcpl <hcpl.prog@gmail.com>"]
 app_dirs = "1.1.1"
 clap = "2.26.0"
 cursive = { git = "https://github.com/gyscos/Cursive" }
+error-chain = "0.10.0"
 time = "0.1.38"
