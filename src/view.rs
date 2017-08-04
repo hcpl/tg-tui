@@ -58,7 +58,7 @@ fn create_main_layout() -> error::Result<LinearLayout> {
     Ok(layout)
 }
 
-fn create_messages_display_area() -> BoxView<MessagesView> {
+fn create_messages_display_area() -> BoxView<IdView<MessagesView>> {
     BoxView::with_full_screen(MessagesView::new()
         .action(Action::Online {
             time: time::now(),
@@ -73,7 +73,8 @@ fn create_messages_display_area() -> BoxView<MessagesView> {
             username: "deadbeef".to_owned(),
             text: "hello tg-tui from deadbeef".to_owned(),
         })
-        .delimiter())
+        .delimiter()
+        .with_id("messages_view"))
 }
 
 fn create_status_bar() -> error::Result<IdView<TextView>> {
