@@ -1,5 +1,6 @@
+use cursive::align::HAlign;
 use cursive::view::Identifiable;
-use cursive::views::{BoxView, TextArea, TextView};
+use cursive::views::{BoxView, IdView, LinearLayout, TextArea, TextView};
 use time;
 
 use common::Action;
@@ -10,11 +11,21 @@ use utils;
 
 pub fn create_main_layout() -> error::Result<LinearLayout> {
     let layout = LinearLayout::vertical()
+        .child(create_dialog_title())
         .child(create_messages_display_area())
         .child(create_status_bar()?)
         .child(create_message_edit_area());
 
     Ok(layout)
+}
+
+
+fn create_dialog_title() -> IdView<TextView> {
+    let dialog_title = TextView::new("dialog title")
+        .h_align(HAlign::Center)
+        .with_id("dialog_title");
+
+    dialog_title
 }
 
 fn create_messages_display_area() -> BoxView<IdView<MessagesView>> {
