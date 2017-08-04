@@ -12,6 +12,7 @@ mod async;
 mod cursive_views;
 mod common;
 mod error;
+mod utils;
 mod view;
 
 
