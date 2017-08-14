@@ -14,7 +14,7 @@ pub fn create_cursive_session() -> error::Result<Cursive> {
 
     siv.set_theme(custom_theme());
     siv.add_global_callback('q', |s| s.quit());
-    siv.add_fullscreen_layer(BoxView::with_full_screen(dialog::create_main_layout()?));
+    siv.add_fullscreen_layer(BoxView::with_full_screen(dialog::Dialog::new()?));
     siv.add_layer(create_authorization_dialog());
 
     siv.set_fps(1);
