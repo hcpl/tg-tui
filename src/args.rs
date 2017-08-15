@@ -10,7 +10,7 @@ use error;
 const APP_INFO: AppInfo = AppInfo { name: crate_name!(), author: crate_authors!() };
 
 
-pub fn process_args() -> error::Result<()> {
+pub fn process_args() -> error::Result<Config> {
     let matches = App::new("Telegram TUI")
         .version(crate_version!())
         .author(crate_authors!())
@@ -37,9 +37,11 @@ pub fn process_args() -> error::Result<()> {
         .map(PathBuf::from)
         .or(maybe_default_config_path);
 
-    let config = process_config_file(maybe_config_path)?;
+    let mut config = process_config_file(maybe_config_path)?;
 
-    Ok(())
+    process_phone_number(matches.value_of("phone number"), &mut config)?;
+
+    Ok(config)
 }
 
 fn process_config_file<P: AsRef<Path>>(config_path: Option<P>) -> error::Result<Config> {
@@ -51,4 +53,12 @@ fn process_config_file<P: AsRef<Path>>(config_path: Option<P>) -> error::Result<
     }
 
     Ok(config)
+}
+
+fn process_phone_number(phone_number: Option<&str>, config: &mut Config) -> error::Result<()> {
+    if let Some(number) = phone_number {
+        config.set("phone-number", number)?;
+    }
+
+    Ok(())
 }

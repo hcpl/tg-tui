@@ -20,8 +20,8 @@ mod view;
 
 
 fn run() -> error::Result<()> {
-    args::process_args()?;
-    let mut siv = view::create_cursive_session()?;
+    let config = args::process_args()?;
+    let mut siv = view::create_cursive_session(&config)?;
 
     for i in 0.. {
         if i % 2 == 0 {
