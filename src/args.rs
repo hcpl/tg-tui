@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 
 use app_dirs::{AppDataType, AppInfo, get_app_dir};
-use clap::{Arg, App};
+use clap::{App, Arg, ArgMatches};
 use config::{Config, File};
 
 use error;
@@ -19,9 +19,13 @@ pub fn process_args() -> error::Result<Config> {
             .help("Config file to use")
             .long("config")
             .takes_value(true))
-        .arg(Arg::with_name("phone number")
-            .help("Sets the phone number used to grant access permissions")
+        .arg(Arg::with_name("phone-number")
+            .help("The phone number used to grant access permissions")
             .long("phone-number")
+            .takes_value(true))
+        .arg(Arg::with_name("send-by")
+            .help("Use this the specified key combination to send a message")
+            .long("send-by")
             .takes_value(true))
         .get_matches();
 
@@ -39,7 +43,8 @@ pub fn process_args() -> error::Result<Config> {
 
     let mut config = process_config_file(maybe_config_path)?;
 
-    process_phone_number(matches.value_of("phone number"), &mut config)?;
+    process_arg(&matches, "phone-number", &mut config)?;
+    process_arg(&matches, "send-by", &mut config)?;
 
     Ok(config)
 }
@@ -48,16 +53,15 @@ fn process_config_file<P: AsRef<Path>>(config_path: Option<P>) -> error::Result<
     let mut config = Config::new();
 
     if let Some(path) = config_path {
-        config
-            .merge(File::with_name(path.as_ref().to_str().unwrap()))?;
+        config.merge(File::with_name(path.as_ref().to_str().unwrap()))?;
     }
 
     Ok(config)
 }
 
-fn process_phone_number(phone_number: Option<&str>, config: &mut Config) -> error::Result<()> {
-    if let Some(number) = phone_number {
-        config.set("phone-number", number)?;
+fn process_arg(matches: &ArgMatches, arg_name: &str, config: &mut Config) -> error::Result<()> {
+    if let Some(value) = matches.value_of(arg_name) {
+        config.set(arg_name, value)?;
     }
 
     Ok(())

@@ -1,6 +1,7 @@
 use cursive::align::HAlign;
+use cursive::event::{Event, Key};
 use cursive::view::{Identifiable, ViewWrapper};
-use cursive::views::{BoxView, IdView, LinearLayout, TextArea, TextView};
+use cursive::views::{BoxView, IdView, LinearLayout, OnEventView, TextArea, TextView};
 use time;
 
 use common::Action;
@@ -76,7 +77,13 @@ impl Dialog {
 
         let message_edit_area = LinearLayout::horizontal()
             .child(TextView::new(prompt))
-            .child(BoxView::with_full_width(TextArea::new().content(initial_message_text)));
+            .child(BoxView::with_full_width(
+                OnEventView::new(TextArea::new().content(initial_message_text).with_id("message-edit"))
+                    .on_event(Event::Ctrl(Key::Enter), |s| {
+                        s.call_on_id("message-edit", |v: &mut IdView<TextArea>| {
+                            v.get_mut().set_content("");
+                        });
+                    })));
 
         message_edit_area
     }
