@@ -65,7 +65,7 @@ impl Dialog {
     }
 
     fn create_status_bar() -> error::Result<IdView<TextView>> {
-        let status_bar = TextView::new(utils::now()?).with_id("status_bar");
+        let status_bar = TextView::new(utils::strnow()?).with_id("status_bar");
 
         Ok(status_bar)
     }

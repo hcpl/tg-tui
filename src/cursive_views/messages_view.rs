@@ -4,10 +4,10 @@ use cursive::{Printer, With};
 use cursive::vec::Vec2;
 use cursive::view::{ScrollBase, View};
 use textwrap;
-use time;
 
 use common::Action;
 use error;
+use utils::strtime;
 
 
 pub struct MessagesView {
@@ -64,10 +64,10 @@ impl MessagesView {
             .unwrap_or(3);
 
         let msg_content_width = available_size.x
-            .saturating_sub(8)
-            .saturating_sub(1)
+            .saturating_sub(8)     // "%H:%M:%S" time
+            .saturating_sub(1)     // a space
             .saturating_sub(max_second_column_width)
-            .saturating_sub(3);
+            .saturating_sub(3);    // " | "
 
         let mut new_rows = Vec::new();
 
@@ -108,10 +108,6 @@ impl MessagesView {
 
         Ok(())
     }
-}
-
-fn strtime(time: &time::Tm) -> error::Result<String> {
-    time::strftime("%H:%M:%S", time).map_err(Into::into)
 }
 
 impl View for MessagesView {
