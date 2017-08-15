@@ -3,6 +3,7 @@ use std::cmp;
 use cursive::{Printer, With};
 use cursive::vec::Vec2;
 use cursive::view::{ScrollBase, View};
+use textwrap;
 use time;
 
 use common::Action;
@@ -62,31 +63,43 @@ impl MessagesView {
             .map(|m| cmp::max(m, 3))    // 3 for "-->" and "<--"
             .unwrap_or(3);
 
-        let new_rows = self.children.iter()
-            .map(|msgs_view_child| -> error::Result<String> {
-                let row = match *msgs_view_child {
-                    MessagesViewChild::Action(ref action) => match *action {
-                        Action::Online { ref time, ref username } => {
-                            format!("{} {:>width$} | {} is online",
-                                strtime(time)?, "-->", username, width=max_second_column_width)
-                        },
-                        Action::Offline { ref time, ref username } => {
-                            format!("{} {:>width$} | {} went offline",
-                                strtime(time)?, "<--", username, width=max_second_column_width)
-                        },
-                        Action::Message { ref time, ref username, ref text } => {
-                            format!("{} {:>width$} | {}",
-                                strtime(time)?, username, text, width=max_second_column_width)
-                        },
-                    },
-                    MessagesViewChild::Delimiter => {
-                        format!("{:->width$}", "", width=available_size.x)
-                    }
-                };
+        // TODO: handle case when terminal is too narrow
+        let msg_content_width = available_size.x - 8 - 1 - max_second_column_width - 3;
 
-                Ok(row)
-            })
-            .collect::<error::Result<Vec<_>>>()?;
+        let mut new_rows = Vec::new();
+
+        for msgs_view_child in self.children.iter() {
+            match *msgs_view_child {
+                MessagesViewChild::Action(ref action) => match *action {
+                    Action::Online { ref time, ref username } => {
+                        new_rows.push(format!("{} {:>width$} | {} is online",
+                            strtime(time)?, "-->", username, width=max_second_column_width));
+                    },
+                    Action::Offline { ref time, ref username } => {
+                        new_rows.push(format!("{} {:>width$} | {} went offline",
+                            strtime(time)?, "<--", username, width=max_second_column_width));
+                    },
+                    Action::Message { ref time, ref username, ref text } => {
+                        let stime = strtime(time)?;
+
+                        for (i, msg_content_row) in textwrap::wrap(text, msg_content_width).into_iter().enumerate() {
+                            let fmt_row = if i == 0 {
+                                format!("{} {:>width$} | {}",
+                                    stime, username, msg_content_row, width=max_second_column_width)
+                            } else {
+                                format!("{:8} {:>width$} | {}",
+                                    "", "", msg_content_row, width=max_second_column_width)
+                            };
+
+                            new_rows.push(fmt_row);
+                        }
+                    },
+                },
+                MessagesViewChild::Delimiter => {
+                    new_rows.push(format!("{:->width$}", "", width=available_size.x))
+                }
+            }
+        }
 
         self.rows = Some(new_rows);
 

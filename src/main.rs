@@ -7,6 +7,7 @@ extern crate cursive;
 extern crate error_chain;
 extern crate rand;
 extern crate time;
+extern crate textwrap;
 
 mod args;
 mod async;

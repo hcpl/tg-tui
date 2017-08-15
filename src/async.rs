@@ -25,7 +25,7 @@ fn add_data(siv: &mut Cursive) {
         .take(nickname_len)
         .collect::<String>();
 
-    let text_len = rng.gen_range(0, 50);
+    let text_len = rng.gen_range(0, 150);
     let text = rng
         .gen_ascii_chars()
         .take(text_len)
