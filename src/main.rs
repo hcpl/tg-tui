@@ -1,6 +1,7 @@
 extern crate app_dirs;
 #[macro_use]
 extern crate clap;
+extern crate config;
 #[macro_use]
 extern crate cursive;
 #[macro_use]

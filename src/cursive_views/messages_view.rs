@@ -100,7 +100,7 @@ impl MessagesView {
                 },
                 MessagesViewChild::Delimiter => {
                     new_rows.push(format!("{:->width$}", "", width=available_size.x))
-                }
+                },
             }
         }
 

@@ -10,6 +10,7 @@ repository = "https://github.com/hcpl/tg-tui"
 [dependencies]
 app_dirs = "1.1.1"
 clap = "2.26.0"
+config = "0.7.0"
 cursive = "0.6.2"
 error-chain = "0.10.0"
 rand = "0.3.16"
