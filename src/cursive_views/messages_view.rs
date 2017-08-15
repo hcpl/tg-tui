@@ -63,8 +63,11 @@ impl MessagesView {
             .map(|m| cmp::max(m, 3))    // 3 for "-->" and "<--"
             .unwrap_or(3);
 
-        // TODO: handle case when terminal is too narrow
-        let msg_content_width = available_size.x - 8 - 1 - max_second_column_width - 3;
+        let msg_content_width = available_size.x
+            .saturating_sub(8)
+            .saturating_sub(1)
+            .saturating_sub(max_second_column_width)
+            .saturating_sub(3);
 
         let mut new_rows = Vec::new();
 
