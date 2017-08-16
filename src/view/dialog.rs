@@ -20,7 +20,8 @@ impl Dialog {
             .child(Dialog::create_dialog_title())
             .child(Dialog::create_messages_display_area())
             .child(Dialog::create_status_bar()?)
-            .child(Dialog::create_message_edit_area());
+            .child(Dialog::create_message_edit_area())
+            .child(Dialog::create_command_field());
 
         Ok(Dialog {
             layout: layout,
@@ -86,6 +87,21 @@ impl Dialog {
                     })));
 
         message_edit_area
+    }
+
+    fn create_command_field() -> OnEventView<IdView<TextArea>> {
+        let command_field = OnEventView::new(TextArea::new().with_id("command-field"))
+            .on_event(Event::Char(':'), |s| {
+                /*s.call_on_id("dialog-state", |v: &mut IdView<DialogState>| {
+                    v.get_mut().set_state(Mode::CommandLine);
+                });*/
+
+                s.call_on_id("command-field", |v: &mut IdView<TextArea>| {
+                    v.get_mut().set_content(":");
+                });
+            });
+
+        command_field
     }
 }
 

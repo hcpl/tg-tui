@@ -6,6 +6,7 @@ extern crate config;
 extern crate cursive;
 #[macro_use]
 extern crate error_chain;
+extern crate pom;
 extern crate rand;
 extern crate time;
 extern crate textwrap;
@@ -13,8 +14,10 @@ extern crate textwrap;
 mod args;
 mod async;
 mod cursive_views;
+mod commands;
 mod common;
 mod error;
+mod mode;
 mod utils;
 mod view;
 

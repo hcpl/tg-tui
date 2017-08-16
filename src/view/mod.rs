@@ -18,11 +18,11 @@ pub fn create_cursive_session(config: &Config) -> error::Result<Cursive> {
     siv.add_fullscreen_layer(BoxView::with_full_screen(dialog::Dialog::new()?));
 
     match config.get_str("phone-number") {
-        // If there is no phone number already in config, request it from the user.
+        // If there is no phone number in config, request it from the user.
         Err(ConfigError::NotFound(_)) => siv.add_layer(create_authorization_dialog()),
         // If other error, propagate it.
         Err(e) => bail!(e),
-        // Otherwise, there is a phone number in config, so no need to ask for it again.
+        // Otherwise, there is a phone number already in config, so no need to ask for it again.
         Ok(_) => {},
     }
 
