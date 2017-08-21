@@ -29,7 +29,7 @@ pub fn create_cursive_session(config: &Config) -> error::Result<Cursive> {
     siv.set_fps(1);
     siv.add_global_callback(Event::Refresh, |s| {
         s.call_on_id("status_bar", |v: &mut IdView<TextView>| {
-            v.get_mut().set_content(utils::strnow().unwrap());
+            v.get_mut().set_content(utils::local_strnow());
         });
     });
 

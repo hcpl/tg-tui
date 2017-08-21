@@ -3,6 +3,5 @@ error_chain! {
         AppDirs(::app_dirs::AppDirsError);
         Config(::config::ConfigError);
         Pom(::pom::Error);
-        TimeParse(::time::ParseError);
     }
 }

@@ -1,12 +1,16 @@
-use time;
+use std::fmt;
 
-use error;
+use chrono::prelude::{DateTime, TimeZone, Local};
 
 
-pub fn strtime(time: &time::Tm) -> error::Result<String> {
-    time::strftime("%H:%M:%S", time).map_err(Into::into)
+pub fn strtime<Tz>(date_time: &DateTime<Tz>) -> String
+    where
+        Tz: TimeZone,
+        Tz::Offset: fmt::Display,
+{
+    date_time.format("%H:%M:%S").to_string()
 }
 
-pub fn strnow() -> error::Result<String> {
-    strtime(&time::now())
+pub fn local_strnow() -> String {
+    strtime(&Local::now())
 }

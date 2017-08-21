@@ -74,16 +74,16 @@ impl MessagesView {
         for msgs_view_child in self.children.iter() {
             match *msgs_view_child {
                 MessagesViewChild::Action(ref action) => match *action {
-                    Action::Online { ref time, ref username } => {
+                    Action::Online { ref date_time, ref username } => {
                         new_rows.push(format!("{} {:>width$} | {} is online",
-                            strtime(time)?, "-->", username, width=max_second_column_width));
+                            strtime(date_time), "-->", username, width=max_second_column_width));
                     },
-                    Action::Offline { ref time, ref username } => {
+                    Action::Offline { ref date_time, ref username } => {
                         new_rows.push(format!("{} {:>width$} | {} went offline",
-                            strtime(time)?, "<--", username, width=max_second_column_width));
+                            strtime(date_time), "<--", username, width=max_second_column_width));
                     },
-                    Action::Message { ref time, ref username, ref text } => {
-                        let stime = strtime(time)?;
+                    Action::Message { ref date_time, ref username, ref text } => {
+                        let stime = strtime(date_time);
 
                         for (i, msg_content_row) in textwrap::wrap(text, msg_content_width).into_iter().enumerate() {
                             let fmt_row = if i == 0 {

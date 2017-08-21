@@ -1,18 +1,18 @@
-use time::{self, Tm};
+use chrono::prelude::{DateTime, Local};
 
 
 #[derive(Debug)]
 pub enum Action {
     Online {
-        time: Tm,
+        date_time: DateTime<Local>,
         username: String,
     },
     Offline {
-        time: Tm,
+        date_time: DateTime<Local>,
         username: String,
     },
     Message {
-        time: Tm,
+        date_time: DateTime<Local>,
         username: String,
         text: String,
     },
@@ -21,21 +21,21 @@ pub enum Action {
 impl Action {
     pub fn online(username: &str) -> Action {
         Action::Online {
-            time: time::now(),
+            date_time: Local::now(),
             username: username.to_owned(),
         }
     }
 
     pub fn offline(username: &str) -> Action {
         Action::Offline {
-            time: time::now(),
+            date_time: Local::now(),
             username: username.to_owned(),
         }
     }
 
     pub fn message(username: &str, text: &str) -> Action {
         Action::Message {
-            time: time::now(),
+            date_time: Local::now(),
             username: username.to_owned(),
             text: text.to_owned(),
         }

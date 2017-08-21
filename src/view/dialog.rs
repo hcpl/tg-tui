@@ -2,7 +2,6 @@ use cursive::align::HAlign;
 use cursive::event::{Event, Key};
 use cursive::view::{Identifiable, ViewWrapper};
 use cursive::views::{BoxView, IdView, LinearLayout, OnEventView, TextArea, TextView};
-use time;
 
 use common::Action;
 use cursive_views::messages_view::MessagesView;
@@ -38,36 +37,32 @@ impl Dialog {
 
     fn create_messages_display_area() -> BoxView<IdView<MessagesView>> {
         BoxView::with_full_screen(MessagesView::new()
-            .action(Action::Online {
-                time: time::now(),
-                username: "foo".to_owned(),
-            })
-            .action(Action::Offline {
-                time: time::now(),
-                username: "bar".to_owned(),
-            })
-            .action(Action::Message {
-                time: time::now(),
-                username: "deadbeef".to_owned(),
-                text: "hello tg-tui from deadbeef".to_owned(),
-            })
-            .action(Action::Message {
-                time: time::now(),
-                username: "".to_owned(),
-                text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, \
-                       sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. \
-                       Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris \
-                       nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in \
-                       reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla \
-                       pariatur. Excepteur sint occaecat cupidatat non proident, sunt in \
-                       culpa qui officia deserunt mollit anim id est laborum.".to_owned(),
-            })
+            .action(Action::online(
+                "foo",
+            ))
+            .action(Action::offline(
+                "bar",
+            ))
+            .action(Action::message(
+                "deadbeef",
+                "hello tg-tui from deadbeef",
+            ))
+            .action(Action::message(
+                "",
+                "Lorem ipsum dolor sit amet, consectetur adipiscing elit, \
+                 sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. \
+                 Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris \
+                 nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in \
+                 reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla \
+                 pariatur. Excepteur sint occaecat cupidatat non proident, sunt in \
+                 culpa qui officia deserunt mollit anim id est laborum.",
+            ))
             .delimiter()
             .with_id("messages_view"))
     }
 
     fn create_status_bar() -> error::Result<IdView<TextView>> {
-        let status_bar = TextView::new(utils::strnow()?).with_id("status_bar");
+        let status_bar = TextView::new(utils::local_strnow()).with_id("status_bar");
 
         Ok(status_bar)
     }
