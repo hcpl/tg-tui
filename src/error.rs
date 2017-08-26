@@ -4,4 +4,11 @@ error_chain! {
         Config(::config::ConfigError);
         Pom(::pom::Error);
     }
+
+    errors {
+        UndefinedCommand(cmd: String) {
+            description("undefined command")
+            display("undefined command: {}", cmd)
+        }
+    }
 }
