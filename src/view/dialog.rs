@@ -7,7 +7,7 @@ use cursive::views::{BoxView, IdView, LinearLayout, OnEventView, TextArea, TextV
 use common::Action;
 use commands::{Command, CommandImpl, parse_command};
 use cursive_views::messages_view::MessagesView;
-use error;
+use error::{self, ErrorKind};
 use mode::Mode;
 use utils;
 
@@ -156,12 +156,19 @@ impl Dialog {
                 Some(EventResult::Consumed(None))
             })
             .on_pre_event_inner(Event::Key(Key::Enter), |v| {
-                let command: CommandImpl = parse_command(v.get_content()).unwrap();
-                command.execute().unwrap();
+                match parse_command::<CommandImpl>(v.get_content()) {
+                    Ok(command) => {
+                        command.execute().unwrap();
 
-                // Clearing
-                while v.get_content() != "" {
-                    v.on_event(Event::Key(Key::Backspace));
+                        // Clearing
+                        while v.get_content() != "" {
+                            v.on_event(Event::Key(Key::Backspace));
+                        }
+                    },
+                    Err(error::Error(ErrorKind::UndefinedCommand(cmd), _)) => {
+                        v.set_content(format!("Not a command: {}", cmd));
+                    },
+                    Err(_) => panic!("cannot handle this error in callback"),
                 }
 
                 Some(EventResult::Consumed(None))
