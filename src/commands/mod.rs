@@ -27,12 +27,13 @@ pub trait Command: Sized {
 }
 
 
+#[derive(Debug, PartialEq)]
 pub struct CommandImpl {
     kind: CommandKind,
     args: Vec<String>,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum CommandKind {
     Info, Write, Quit,
 }
@@ -110,4 +111,52 @@ fn collect_args<'a, I>(args: I) -> Vec<String>
     where I: IntoIterator<Item=&'a str>
 {
     args.into_iter().map(String::from).collect()
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::{CommandImpl, CommandKind, parse_command};
+
+    #[test]
+    fn test_single_command() {
+        let input = ":write foo    bar";
+        let parsed = parse_command::<CommandImpl>(input).unwrap();
+        let expected = CommandImpl {
+            kind: CommandKind::Write,
+            args: vec!["foo".to_owned(), "bar".to_owned()],
+        };
+
+        assert_eq!(parsed, expected);
+    }
+
+    #[test]
+    fn test_single_command2() {
+        let input = ":q";
+        let parsed = parse_command::<CommandImpl>(input).unwrap();
+        let expected = CommandImpl {
+            kind: CommandKind::Quit,
+            args: vec![],
+        };
+
+        assert_eq!(parsed, expected);
+    }
+
+    #[test]
+    fn test_compound_command() {
+        let input = ":wq";
+        let parsed = parse_command::<Vec<CommandImpl>>(input).unwrap();
+        let expected = vec![
+            CommandImpl {
+                kind: CommandKind::Write,
+                args: vec![],
+            },
+            CommandImpl {
+                kind: CommandKind::Quit,
+                args: vec![],
+            },
+        ];
+
+        assert_eq!(parsed, expected);
+    }
 }
