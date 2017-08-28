@@ -31,7 +31,7 @@ fn add_data(siv: &mut Cursive) {
         .take(text_len)
         .collect::<String>();
 
-    siv.call_on_id("messages_view", |view: &mut MessagesView| {
+    siv.call_on_id("messages-view", |view: &mut MessagesView| {
         view.add_action(Action::message(&nickname, &text));
     });
 }

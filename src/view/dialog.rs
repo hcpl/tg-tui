@@ -1,6 +1,6 @@
 use cursive::align::HAlign;
 use cursive::direction::Direction;
-use cursive::event::{Event, EventResult, Key};
+use cursive::event::{Callback, Event, EventResult, Key};
 use cursive::view::{Finder, Identifiable, View, ViewWrapper};
 use cursive::views::{BoxView, IdView, LinearLayout, OnEventView, TextArea, TextView};
 
@@ -117,7 +117,7 @@ impl Dialog {
                  culpa qui officia deserunt mollit anim id est laborum.",
             ))
             .delimiter()
-            .with_id("messages_view"))
+            .with_id("messages-view"))
     }
 
     fn create_status_bar() -> error::Result<IdView<TextView>> {
@@ -156,9 +156,13 @@ impl Dialog {
                 Some(EventResult::Consumed(None))
             })
             .on_pre_event_inner(Event::Key(Key::Enter), |v| {
-                match parse_command::<CommandImpl>(v.get_content()) {
+                let mut callback = None;
+
+                match parse_command::<Vec<CommandImpl>>(v.get_content()) {
                     Ok(command) => {
-                        command.execute().unwrap();
+                        callback = Some(Callback::from_fn(move |siv| {
+                            command.execute(siv).unwrap();
+                        }));
 
                         // Clearing
                         while v.get_content() != "" {
@@ -176,7 +180,7 @@ impl Dialog {
                     Err(_) => panic!("cannot handle this error in callback"),
                 }
 
-                Some(EventResult::Consumed(None))
+                Some(EventResult::Consumed(callback))
             })
             .with_id("command-field");
 
