@@ -4,7 +4,7 @@ use cursive::event::{Event, EventResult, Key};
 use cursive::view::{Finder, Identifiable, View, ViewWrapper};
 use cursive::views::{BoxView, IdView, LinearLayout, OnEventView, TextArea, TextView};
 
-use common::Action;
+use action::Action;
 use commands::{Command, CommandImpl, parse_command};
 use cursive_views::messages_view::MessagesView;
 use error::{self, ErrorKind};
@@ -121,7 +121,7 @@ impl Dialog {
     }
 
     fn create_status_bar() -> error::Result<IdView<TextView>> {
-        let status_bar = TextView::new(utils::local_strnow()).with_id("status_bar");
+        let status_bar = TextView::new(utils::local_strnow()).with_id("status-bar");
 
         Ok(status_bar)
     }
@@ -167,6 +167,11 @@ impl Dialog {
                     },
                     Err(error::Error(ErrorKind::UndefinedCommand(cmd), _)) => {
                         v.set_content(format!("Not a command: {}", cmd));
+                        v.find_id("dialog", |d: &mut OnEventView<Dialog>| {
+                            d.with_view_mut(|d| {
+                                d.mode = Mode::Normal;
+                            });
+                        });
                     },
                     Err(_) => panic!("cannot handle this error in callback"),
                 }

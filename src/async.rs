@@ -3,7 +3,7 @@ use std::thread;
 use cursive::Cursive;
 use rand::{self, Rng};
 
-use common::Action;
+use action::Action;
 use cursive_views::messages_view::MessagesView;
 
 

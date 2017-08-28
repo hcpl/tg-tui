@@ -5,7 +5,7 @@ use cursive::vec::Vec2;
 use cursive::view::{ScrollBase, View};
 use textwrap;
 
-use common::Action;
+use action::Action;
 use error;
 use utils::strtime;
 

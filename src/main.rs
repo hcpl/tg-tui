@@ -11,11 +11,11 @@ extern crate pom;
 extern crate rand;
 extern crate textwrap;
 
+mod action;
 mod args;
 mod async;
 mod cursive_views;
 mod commands;
-mod common;
 mod error;
 mod mode;
 mod utils;
