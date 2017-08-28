@@ -14,6 +14,7 @@ extern crate textwrap;
 mod action;
 mod args;
 mod async;
+mod bindings;
 mod cursive_views;
 mod commands;
 mod error;

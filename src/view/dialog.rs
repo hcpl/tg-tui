@@ -45,6 +45,7 @@ impl Dialog {
 
                         Some(EventResult::Consumed(None))
                     },
+                    Mode::Visual => unimplemented!(),
                     _ => None,
                 }
             })
@@ -60,6 +61,7 @@ impl Dialog {
                         });
                         Some(EventResult::Consumed(None))
                     },
+                    Mode::Visual => unimplemented!(),
                     Mode::CommandLine => {
                         dialog.find_id("command-field", |edit: &mut IdView<OnEventView<TextArea>>| {
                             edit.on_event(Event::Char('i'));
@@ -75,6 +77,7 @@ impl Dialog {
                         dialog.mode = Mode::Normal;
                         Some(EventResult::Consumed(None))
                     },
+                    Mode::Visual => unimplemented!(),
                     Mode::CommandLine => {
                         dialog.mode = Mode::Normal;
                         Some(EventResult::Consumed(None))
