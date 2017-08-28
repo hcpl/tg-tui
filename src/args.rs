@@ -4,13 +4,15 @@ use app_dirs::{AppDataType, AppInfo, get_app_dir};
 use clap::{App, Arg, ArgMatches};
 use config::{Config, File};
 
+use app_config::AppConfig;
 use error;
 
 
 const APP_INFO: AppInfo = AppInfo { name: crate_name!(), author: crate_authors!() };
+const DEFAULT_CONFIG_FILENAME: &'static str = "config.toml";
 
 
-pub fn process_args() -> error::Result<Config> {
+pub fn process_args() -> error::Result<AppConfig> {
     let matches = App::new("Telegram TUI")
         .version(crate_version!())
         .author(crate_authors!())
@@ -23,13 +25,9 @@ pub fn process_args() -> error::Result<Config> {
             .help("The phone number used to grant access permissions")
             .long("phone-number")
             .takes_value(true))
-        .arg(Arg::with_name("send-by")
-            .help("Use this the specified key combination to send a message")
-            .long("send-by")
-            .takes_value(true))
         .get_matches();
 
-    let default_config_path = get_app_dir(AppDataType::UserConfig, &APP_INFO, "config.toml")?;
+    let default_config_path = get_app_dir(AppDataType::UserConfig, &APP_INFO, DEFAULT_CONFIG_FILENAME)?;
     let maybe_default_config_path = if default_config_path.exists() {
         Some(default_config_path)
     } else {
@@ -44,9 +42,8 @@ pub fn process_args() -> error::Result<Config> {
     let mut config = process_config_file(maybe_config_path)?;
 
     process_arg(&matches, "phone-number", &mut config)?;
-    process_arg(&matches, "send-by", &mut config)?;
 
-    Ok(config)
+    config.try_into().map_err(Into::into)
 }
 
 fn process_config_file<P: AsRef<Path>>(config_path: Option<P>) -> error::Result<Config> {

@@ -9,9 +9,13 @@ extern crate cursive;
 extern crate error_chain;
 extern crate pom;
 extern crate rand;
+#[macro_use]
+extern crate serde_derive;
 extern crate textwrap;
 
+
 mod action;
+mod app_config;
 mod args;
 mod async;
 mod bindings;
@@ -24,8 +28,8 @@ mod view;
 
 
 fn run() -> error::Result<()> {
-    let config = args::process_args()?;
-    let mut siv = view::create_cursive_session(&config)?;
+    let mut app_config = args::process_args()?;
+    let mut siv = view::create_cursive_session(&mut app_config)?;
 
     for i in 0.. {
         if i % 2 == 0 {

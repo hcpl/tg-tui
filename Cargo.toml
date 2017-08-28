@@ -17,6 +17,8 @@ cursive = { git = "https://github.com/gyscos/Cursive", default-features = false 
 error-chain = "0.10.0"
 pom = "1.0.1"
 rand = "0.3.16"
+serde = "1.0.11"
+serde_derive = "1.0.11"
 textwrap = "0.7.0"
 
 [features]
