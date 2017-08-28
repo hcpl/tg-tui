@@ -20,15 +20,13 @@ pub trait Command: Sized {
 }
 
 
-fn collect_args<'a, I>(args: I) -> Vec<String>
-    where I: IntoIterator<Item=&'a str>
-{
-    args.into_iter().map(String::from).collect()
+pub struct CommandImpl {
+    kind: CommandKind,
+    args: Vec<String>,
 }
 
-pub enum CommandImpl {
-    Info(Vec<String>),
-    Write(Vec<String>),
+pub enum CommandKind {
+    Info, Write, Quit,
 }
 
 impl Command for CommandImpl {
@@ -40,12 +38,22 @@ impl Command for CommandImpl {
     fn try_from_str<'a, I>(command_name: &str, args: I) -> error::Result<CommandImpl>
         where I: IntoIterator<Item=&'a str>
     {
-        let cmd_fn = match command_name {
-            "info" => CommandImpl::Info,
-            "write" | "w" => CommandImpl::Write,
+        let kind = match command_name {
+            "info" => CommandKind::Info,
+            "write" | "w" => CommandKind::Write,
+            "quit" | "q" => CommandKind::Quit,
             _ => bail!(ErrorKind::UndefinedCommand(command_name.to_owned())),
         };
 
-        Ok(cmd_fn(collect_args(args)))
+        Ok(CommandImpl {
+            kind: kind,
+            args: collect_args(args)
+        })
     }
+}
+
+fn collect_args<'a, I>(args: I) -> Vec<String>
+    where I: IntoIterator<Item=&'a str>
+{
+    args.into_iter().map(String::from).collect()
 }
