@@ -7,6 +7,8 @@ extern crate config;
 extern crate cursive;
 #[macro_use]
 extern crate error_chain;
+#[macro_use]
+extern crate lazy_static;
 extern crate pom;
 extern crate rand;
 #[macro_use]

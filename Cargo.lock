@@ -8,6 +8,7 @@ dependencies = [
  "config 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "cursive 0.6.5-pre (git+https://github.com/gyscos/Cursive)",
  "error-chain 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "lazy_static 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "pom 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.3.16 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.11 (registry+https://github.com/rust-lang/crates.io-index)",

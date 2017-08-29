@@ -14,7 +14,7 @@ error_chain! {
             display("no bindings can be registered for this mode: {:?}", mode)
         }
 
-        BindingNotFound(mode: Mode, binding: &'static str) {
+        BindingNotFound(mode: Mode, binding: String) {
             description("no binding found for mode")
             display("no binding named {:?} found for mode {:?}", binding, mode)
         }

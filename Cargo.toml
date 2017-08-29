@@ -15,6 +15,7 @@ config = "0.7.0"
 #cursive = { version = "0.6.4", default-features = false }
 cursive = { git = "https://github.com/gyscos/Cursive", default-features = false }
 error-chain = "0.10.0"
+lazy_static = "0.2.8"
 pom = "1.0.1"
 rand = "0.3.16"
 serde = "1.0.11"

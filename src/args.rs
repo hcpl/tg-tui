@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
 use app_dirs::{AppDataType, AppInfo, get_app_dir};
@@ -10,6 +11,7 @@ use error;
 
 const APP_INFO: AppInfo = AppInfo { name: crate_name!(), author: crate_authors!() };
 const DEFAULT_CONFIG_FILENAME: &'static str = "config.toml";
+const DEFAULT_BINDINGS_FILENAME: &'static str = "bindings.toml";
 
 
 pub fn process_args() -> error::Result<AppConfig> {
@@ -21,29 +23,41 @@ pub fn process_args() -> error::Result<AppConfig> {
             .help("Config file to use")
             .long("config")
             .takes_value(true))
+        .arg(Arg::with_name("bindings")
+            .help("Bindings file to use")
+            .long("bindings")
+            .takes_value(true))
         .arg(Arg::with_name("phone-number")
             .help("The phone number used to grant access permissions")
             .long("phone-number")
             .takes_value(true))
         .get_matches();
 
-    let default_config_path = get_app_dir(AppDataType::UserConfig, &APP_INFO, DEFAULT_CONFIG_FILENAME)?;
+    let maybe_config_path = get_maybe_config_path(DEFAULT_CONFIG_FILENAME, &matches, "config")?;
+    let mut config = process_config_file(maybe_config_path)?;
+    process_arg(&matches, "phone-number", &mut config)?;
+
+    let maybe_bindings_path = get_maybe_config_path(DEFAULT_BINDINGS_FILENAME, &matches, "bindings")?;
+    let bindings: HashMap<String, String> = process_config_file(maybe_bindings_path)?.try_into()?;
+    config.set("bindings", bindings)?;
+
+    config.try_into().map_err(Into::into)
+}
+
+fn get_maybe_config_path(default_filename: &str, matches: &ArgMatches, arg_name: &str) -> error::Result<Option<PathBuf>> {
+    let default_config_path = get_app_dir(AppDataType::UserConfig, &APP_INFO, default_filename)?;
+
     let maybe_default_config_path = if default_config_path.exists() {
         Some(default_config_path)
     } else {
         None
     };
 
-    // Defaults to config.toml in the app dir if present
-    let maybe_config_path = matches.value_of("config")
+    let maybe_config_path = matches.value_of(arg_name)
         .map(PathBuf::from)
         .or(maybe_default_config_path);
 
-    let mut config = process_config_file(maybe_config_path)?;
-
-    process_arg(&matches, "phone-number", &mut config)?;
-
-    config.try_into().map_err(Into::into)
+    Ok(maybe_config_path)
 }
 
 fn process_config_file<P: AsRef<Path>>(config_path: Option<P>) -> error::Result<Config> {
