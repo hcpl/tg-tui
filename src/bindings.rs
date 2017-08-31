@@ -8,20 +8,33 @@ use error::{self, ErrorKind};
 use mode::Mode;
 
 
-type SimpleCallback = Box<Fn(&mut Cursive) + Sync + Send>;
+type SimpleCallback = Fn(&mut Cursive) -> error::Result<()> + Sync + Send;
+type BoxedSimpleCallback = Box<SimpleCallback>;
 
-struct Callback(Arc<SimpleCallback>);
+struct Callback(Arc<BoxedSimpleCallback>);
 
 impl Callback {
-    fn from_fn<F: Fn(&mut Cursive) + Sync + Send + 'static>(f: F) -> Callback {
+    fn from_fn<F>(f: F) -> Callback
+        where F: Fn(&mut Cursive) -> error::Result<()> + Sync + Send + 'static
+    {
         Callback(Arc::new(Box::new(f)))
+    }
+
+    fn from_non_result_fn<F>(f: F) -> Callback
+        where F: Fn(&mut Cursive) + Sync + Send + 'static
+    {
+        Callback::from_fn(move |siv| {
+            f(siv);
+
+            Ok(())
+        })
     }
 }
 
 impl ops::Deref for Callback {
-    type Target = SimpleCallback;
+    type Target = BoxedSimpleCallback;
 
-    fn deref<'a>(&'a self) -> &'a SimpleCallback {
+    fn deref<'a>(&'a self) -> &'a BoxedSimpleCallback {
         &self.0
     }
 }
@@ -33,7 +46,7 @@ lazy_static! {
     static ref CALLBACKS_NAMES: CallbacksNames = {
         let mut cb_names: CallbacksNames = HashMap::new();
 
-        cb_names.insert("quit".to_owned(), Callback::from_fn(|siv| siv.quit()));
+        cb_names.insert("quit".to_owned(), Callback::from_non_result_fn(|siv| siv.quit()));
 
         cb_names
     };
@@ -80,7 +93,7 @@ impl Bindings {
         Ok(callback_name)
     }
 
-    pub fn get_callback(&self, mode: Mode, binding: &str) -> error::Result<&SimpleCallback> {
+    pub fn get_callback(&self, mode: Mode, binding: &str) -> error::Result<&BoxedSimpleCallback> {
         let callback_name = self.get(mode, binding)?;
         let callback = CALLBACKS_NAMES.get(callback_name)
             .ok_or(ErrorKind::InvalidCallbackName(callback_name.to_owned()))?;
@@ -99,7 +112,7 @@ impl Bindings {
     pub fn execute(&self, mode: Mode, binding: &str, siv: &mut Cursive) -> error::Result<()> {
         let callback = self.get_callback(mode, binding)?;
 
-        callback(siv);
+        callback(siv)?;
 
         Ok(())
     }
