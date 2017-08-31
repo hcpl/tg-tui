@@ -19,6 +19,11 @@ error_chain! {
             display("no binding named {:?} found for mode {:?}", binding, mode)
         }
 
+        InvalidCallbackName(callback_name: String) {
+            description("invalid callback name")
+            display("invalid callback name: {}", callback_name)
+        }
+
         UndefinedCommand(cmd: String) {
             description("undefined command")
             display("undefined command: {}", cmd)
