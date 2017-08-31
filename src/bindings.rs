@@ -55,7 +55,7 @@ lazy_static! {
 
 type ModeBindings = HashMap<String, String>;
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct Bindings {
     bindings: HashMap<Mode, ModeBindings>,
 }

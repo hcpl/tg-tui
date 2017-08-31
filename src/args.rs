@@ -38,10 +38,22 @@ pub fn process_args() -> error::Result<AppConfig> {
     process_arg(&matches, "phone-number", &mut config)?;
 
     let maybe_bindings_path = get_maybe_config_path(DEFAULT_BINDINGS_FILENAME, &matches, "bindings")?;
-    let bindings: HashMap<String, String> = process_config_file(maybe_bindings_path)?.try_into()?;
+    let bindings: HashMap<String, String> = process_config_file(maybe_bindings_path)?
+        // We're going to discard non key-value configs because:
+        // - They are incorrect (at least for now, in future this restriction may be lifted, but
+        //   this is unlikely - those are bindings after all);
+        // - We can't thoroughly inspect the cache field of Config type, because the
+        //   `config::value` module is not public and `config::value::ValueKind` type is not
+        //   publicly reexported, even though `ValueKind` itself declared public.
+        .try_into()
+        .unwrap_or(HashMap::new());
     config.set("bindings", bindings)?;
+    println!("{:#?}", config);
 
-    config.try_into().map_err(Into::into)
+    let x = config.try_into();
+    println!("{:#?}", x);
+
+    x.map_err(Into::into)
 }
 
 fn get_maybe_config_path(default_filename: &str, matches: &ArgMatches, arg_name: &str) -> error::Result<Option<PathBuf>> {
