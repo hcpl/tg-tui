@@ -63,21 +63,24 @@ pub struct Bindings {
 impl Bindings {
     /// Default bindings
     pub fn new() -> Bindings {
-        let mut normal: ModeBindings = HashMap::new();
-        normal.insert("a".to_owned(), "append_after_cursor".to_owned());
-        //normal.insert("d", "delete");
-        normal.insert("i".to_owned(), "insert".to_owned());
-        normal.insert("q".to_owned(), "quit".to_owned());
-        //normal.insert("s", "");
-        normal.insert("u".to_owned(), "undo".to_owned());
+        let normal = hashmap! {
+            "a".to_owned() => "append_after_cursor".to_owned(),
+            //"d".to_owned() => "delete".to_owned(),
+            "i".to_owned() => "insert".to_owned(),
+            "q".to_owned() => "quit".to_owned(),
+            //"s".to_owned() => "".to_owned(),
+            "u".to_owned() => "undo".to_owned(),
+        };
 
-        let mut visual: ModeBindings = HashMap::new();
-        visual.insert("a".to_owned(), "append_after_cursor".to_owned());
-        visual.insert("d".to_owned(), "delete".to_owned());
+        let visual = hashmap! {
+            "a".to_owned() => "append_after_cursor".to_owned(),
+            "d".to_owned() => "delete".to_owned(),
+        };
 
-        let mut bindings = HashMap::new();
-        bindings.insert(Mode::Normal, normal);
-        bindings.insert(Mode::Visual, visual);
+        let bindings = hashmap! {
+            Mode::Normal => normal,
+            Mode::Visual => visual,
+        };
 
         Bindings {
             bindings: bindings,
