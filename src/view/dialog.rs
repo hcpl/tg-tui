@@ -35,13 +35,7 @@ impl Dialog {
             .on_pre_event_inner(Event::Char(':'), |dialog| {
                 match dialog.mode {
                     Mode::Normal => {
-                        dialog.find_id("command-field", |field: &mut IdView<OnEventView<TextArea>>| {
-                            field.get_mut().with_view_mut(|f| {
-                                f.on_event(Event::Char(':'));
-                                f.take_focus(Direction::none());
-                            })
-                        });
-                        dialog.mode = Mode::CommandLine;
+                        dialog.set_mode(Mode::CommandLine);
 
                         Some(EventResult::Consumed(None))
                     },
@@ -52,7 +46,7 @@ impl Dialog {
             .on_pre_event_inner(Event::Char('i'), |dialog| {
                 match dialog.mode {
                     Mode::Normal => {
-                        dialog.mode = Mode::Insert;
+                        dialog.set_mode(Mode::Insert);
                         Some(EventResult::Consumed(None))
                     },
                     Mode::Insert => {
@@ -74,12 +68,15 @@ impl Dialog {
                 match dialog.mode {
                     Mode::Normal => None,
                     Mode::Insert => {
-                        dialog.mode = Mode::Normal;
+                        dialog.set_mode(Mode::Normal);
                         Some(EventResult::Consumed(None))
                     },
-                    Mode::Visual => unimplemented!(),
+                    Mode::Visual => {
+                        dialog.set_mode(Mode::Normal);
+                        Some(EventResult::Consumed(None))
+                    },
                     Mode::CommandLine => {
-                        dialog.mode = Mode::Normal;
+                        dialog.set_mode(Mode::Normal);
                         Some(EventResult::Consumed(None))
                     },
                 }
@@ -188,6 +185,76 @@ impl Dialog {
             .with_id("command-field");
 
         command_field
+    }
+
+    /// Sets to the specified mode and also sets everything up so that the actual state of the
+    /// view was synchronized with the nominal mode.
+    fn set_mode(&mut self, mode: Mode) {
+        let before = self.mode;
+        let after = mode;
+
+        match (before, after) {
+            (Mode::Normal, Mode::Insert) => {
+                self.find_id("message-edit", |edit: &mut IdView<OnEventView<TextArea>>| {
+                    edit.get_mut().with_view_mut(|e| {
+                        e.take_focus(Direction::none());
+                    });
+                });
+            },
+            (Mode::Normal, Mode::Visual) => {
+                self.find_id("message-edit", |edit: &mut IdView<OnEventView<TextArea>>| {
+                    edit.get_mut().with_view_mut(|e| {
+                        e.take_focus(Direction::none());
+                    });
+                });
+            },
+            (Mode::Normal, Mode::CommandLine) => {
+                 self.find_id("command-field", |field: &mut IdView<OnEventView<TextArea>>| {
+                     field.get_mut().with_view_mut(|f| {
+                         f.on_event(Event::Char(':'));
+                         f.take_focus(Direction::none());
+                     });
+                 });
+            },
+
+            (Mode::Insert, Mode::Normal) => {
+                self.take_focus(Direction::none());
+            },
+            (Mode::Insert, Mode::Visual) => {
+                // Do nothing
+            },
+            (Mode::Insert, Mode::CommandLine) => {
+                unreachable!("cannot reach to command-line mode from insert mode");
+            },
+
+            (Mode::Visual, Mode::Normal) => {
+                self.take_focus(Direction::none());
+            },
+            (Mode::Visual, Mode::Insert) => {
+                // Do nothing
+            },
+            (Mode::Visual, Mode::CommandLine) => {
+                unreachable!("cannot reach to command-line mode from visual mode");
+            },
+
+            (Mode::CommandLine, Mode::Normal) => {
+                self.take_focus(Direction::none());
+            },
+            (Mode::CommandLine, Mode::Insert) => {
+                unreachable!("cannot reach to insert mode from command-line mode");
+            },
+            (Mode::CommandLine, Mode::Visual) => {
+                unreachable!("cannot reach to visual mode from command-line mode");
+            },
+
+            (before, after) => {
+                // Only before == after cases left, which are no-op
+                // Checking this in case of adding new variants
+                assert_eq!(before, after);
+            }
+        }
+
+        self.mode = mode;
     }
 }
 
