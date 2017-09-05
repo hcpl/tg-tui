@@ -85,7 +85,7 @@ impl MessagesView {
                     Action::Message { ref date_time, ref username, ref text } => {
                         let stime = strtime(date_time);
 
-                        for (i, msg_content_row) in textwrap::wrap(text, msg_content_width).into_iter().enumerate() {
+                        for (i, msg_content_row) in textwrap::wrap_iter(text, msg_content_width).enumerate() {
                             let fmt_row = if i == 0 {
                                 format!("{} {:>width$} | {}",
                                     stime, username, msg_content_row, width=max_second_column_width)
