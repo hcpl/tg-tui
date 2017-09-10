@@ -2,8 +2,8 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
 use app_dirs::{AppDataType, AppInfo, get_app_dir};
-use clap::{App, Arg, ArgMatches};
 use config::{Config, File};
+use structopt::StructOpt;
 
 use app_config::AppConfig;
 use error;
@@ -14,30 +14,28 @@ const DEFAULT_CONFIG_FILENAME: &'static str = "config.toml";
 const DEFAULT_BINDINGS_FILENAME: &'static str = "bindings.toml";
 
 
+#[derive(Debug, StructOpt)]
+#[structopt(name = "", about = "")]
+struct ArgsConfig {
+    #[structopt(long = "config", help = "Config file")]
+    config_file: Option<String>,
+
+    #[structopt(long = "bindings", help = "Key bindings file")]
+    bindings_file: Option<String>,
+
+    #[structopt(long = "phone-number", help = "The phone number used to grant access permissions")]
+    phone_number: Option<String>,
+}
+
+
 pub fn process_args() -> error::Result<AppConfig> {
-    let matches = App::new("Telegram TUI")
-        .version(crate_version!())
-        .author(crate_authors!())
-        .about(crate_description!())
-        .arg(Arg::with_name("config")
-            .help("Config file")
-            .long("config")
-            .takes_value(true))
-        .arg(Arg::with_name("bindings")
-            .help("Key bindings file")
-            .long("bindings")
-            .takes_value(true))
-        .arg(Arg::with_name("phone-number")
-            .help("The phone number used to grant access permissions")
-            .long("phone-number")
-            .takes_value(true))
-        .get_matches();
+    let args_config = ArgsConfig::from_args();
 
-    let maybe_config_path = get_maybe_config_path(DEFAULT_CONFIG_FILENAME, &matches, "config")?;
+    let maybe_config_path = get_maybe_config_path(DEFAULT_CONFIG_FILENAME, &args_config.config_file)?;
     let mut config = process_config_file(maybe_config_path)?;
-    process_arg(&matches, "phone-number", &mut config)?;
+    process_arg("phone-number", &args_config.phone_number, &mut config)?;
 
-    let maybe_bindings_path = get_maybe_config_path(DEFAULT_BINDINGS_FILENAME, &matches, "bindings")?;
+    let maybe_bindings_path = get_maybe_config_path(DEFAULT_BINDINGS_FILENAME, &args_config.bindings_file)?;
     let bindings: HashMap<String, String> = process_config_file(maybe_bindings_path)?
         // We're going to discard non key-value configs because:
         // - They are incorrect (at least for now, in future this restriction may be lifted, but
@@ -56,7 +54,9 @@ pub fn process_args() -> error::Result<AppConfig> {
     x.map_err(Into::into)
 }
 
-fn get_maybe_config_path(default_filename: &str, matches: &ArgMatches, arg_name: &str) -> error::Result<Option<PathBuf>> {
+fn get_maybe_config_path(default_filename: &str,
+                         arg_filename: &Option<String>)
+                        -> error::Result<Option<PathBuf>> {
     let default_config_path = get_app_dir(AppDataType::UserConfig, &APP_INFO, default_filename)?;
 
     let maybe_default_config_path = if default_config_path.exists() {
@@ -65,7 +65,7 @@ fn get_maybe_config_path(default_filename: &str, matches: &ArgMatches, arg_name:
         None
     };
 
-    let maybe_config_path = matches.value_of(arg_name)
+    let maybe_config_path = arg_filename.as_ref()
         .map(PathBuf::from)
         .or(maybe_default_config_path);
 
@@ -82,9 +82,9 @@ fn process_config_file<P: AsRef<Path>>(config_path: Option<P>) -> error::Result<
     Ok(config)
 }
 
-fn process_arg(matches: &ArgMatches, arg_name: &str, config: &mut Config) -> error::Result<()> {
-    if let Some(value) = matches.value_of(arg_name) {
-        config.set(arg_name, value)?;
+fn process_arg(arg_name: &str, arg_value: &Option<String>, config: &mut Config) -> error::Result<()> {
+    if let Some(ref value) = *arg_value {
+        config.set(arg_name, value.as_str())?;
     }
 
     Ok(())

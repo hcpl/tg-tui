@@ -15,6 +15,9 @@ extern crate pom;
 extern crate rand;
 #[macro_use]
 extern crate serde_derive;
+extern crate structopt;
+#[macro_use]
+extern crate structopt_derive;
 extern crate textwrap;
 
 
