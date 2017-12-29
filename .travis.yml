@@ -1,0 +1,30 @@
+language: rust
+
+rust:
+  - 1.20.0
+  - stable
+  - beta
+  - nightly
+
+env:
+  global:
+    - RUST_BACKTRACE=1
+  matrix:
+    - FEATURES=""
+
+matrix:
+  allow_failures:
+    - rust: nightly
+  include:
+    # Test different backends only on limited amount of configurations - we don't need more
+    - rust: stable
+      env: FEATURES="--no-default-features --features ncurses-backend"
+    - rust: stable
+      env: FEATURES="--no-default-features --features pancurses-backend"
+    - rust: stable
+      env: FEATURES="--no-default-features --features termion-backend"
+    - rust: stable
+      env: FEATURES="--no-default-features --features blt-backend"
+
+script:
+  - cargo test --verbose "${FEATURES}"

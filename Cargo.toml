@@ -15,6 +15,7 @@ config = "0.7.0"
 # cursive =0.7.5 uses Vec::splice, which requires Rust >=1.21
 # cursive >=0.7.3 <=0.7.4 use usize::min (from Ord trait), which requires Rust >=1.21
 cursive = { version = "<=0.7.2", default-features = false }
+env_logger = "0.4.3"
 error-chain = "0.11.0"
 lazy_static = "1.0.0"
 maplit = "1.0.0"
