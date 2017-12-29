@@ -3,10 +3,10 @@ use std::path::{Path, PathBuf};
 
 use app_dirs::{AppDataType, AppInfo, get_app_dir};
 use config::{Config, File};
+use failure;
 use structopt::StructOpt;
 
 use app_config::AppConfig;
-use error;
 
 
 const APP_INFO: AppInfo = AppInfo { name: crate_name!(), author: crate_authors!() };
@@ -28,7 +28,7 @@ struct ArgsConfig {
 }
 
 
-pub fn process_args() -> error::Result<AppConfig> {
+pub fn process_args() -> Result<AppConfig, failure::Error> {
     let args_config = ArgsConfig::from_args();
 
     let maybe_config_path = get_maybe_config_path(DEFAULT_CONFIG_FILENAME, &args_config.config_file)?;
@@ -56,7 +56,7 @@ pub fn process_args() -> error::Result<AppConfig> {
 
 fn get_maybe_config_path(default_filename: &str,
                          arg_filename: &Option<String>)
-                        -> error::Result<Option<PathBuf>> {
+                        -> Result<Option<PathBuf>, failure::Error> {
     let default_config_path = get_app_dir(AppDataType::UserConfig, &APP_INFO, default_filename)?;
 
     let maybe_default_config_path = if default_config_path.exists() {
@@ -72,7 +72,7 @@ fn get_maybe_config_path(default_filename: &str,
     Ok(maybe_config_path)
 }
 
-fn process_config_file<P: AsRef<Path>>(config_path: Option<P>) -> error::Result<Config> {
+fn process_config_file<P: AsRef<Path>>(config_path: Option<P>) -> Result<Config, failure::Error> {
     let mut config = Config::new();
 
     if let Some(path) = config_path {
@@ -82,7 +82,7 @@ fn process_config_file<P: AsRef<Path>>(config_path: Option<P>) -> error::Result<
     Ok(config)
 }
 
-fn process_arg(arg_name: &str, arg_value: &Option<String>, config: &mut Config) -> error::Result<()> {
+fn process_arg(arg_name: &str, arg_value: &Option<String>, config: &mut Config) -> Result<(), failure::Error> {
     if let Some(ref value) = *arg_value {
         config.set(arg_name, value.as_str())?;
     }

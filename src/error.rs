@@ -1,32 +1,34 @@
 use mode::Mode;
 
 
-error_chain! {
-    foreign_links {
-        AppDirs(::app_dirs::AppDirsError);
-        Config(::config::ConfigError);
-        Pom(::pom::Error);
-    }
+#[derive(Debug, Fail)]
+pub enum TgTuiError {
+    #[fail(display = "no bindings can be registered for this mode: {:?}", mode)]
+    BindingModeNonRegisterable {
+        mode: Mode,
+    },
 
-    errors {
-        BindingModeNonRegisterable(mode: Mode) {
-            description("no bindings can be registered for the mode")
-            display("no bindings can be registered for this mode: {:?}", mode)
-        }
+    #[fail(display = "no binding named {:?} found for mode {:?}", binding, mode)]
+    BindingNotFound {
+        mode: Mode,
+        binding: String,
+    },
 
-        BindingNotFound(mode: Mode, binding: String) {
-            description("no binding found for mode")
-            display("no binding named {:?} found for mode {:?}", binding, mode)
-        }
+    #[fail(display = "invalid callback name: {}", callback_name)]
+    InvalidCallbackName {
+        callback_name: String,
+    },
 
-        InvalidCallbackName(callback_name: String) {
-            description("invalid callback name")
-            display("invalid callback name: {}", callback_name)
-        }
+    #[fail(display = "undefined command: {}", cmd)]
+    UndefinedCommand {
+        cmd: String,
+    },
+}
 
-        UndefinedCommand(cmd: String) {
-            description("undefined command")
-            display("undefined command: {}", cmd)
-        }
-    }
+pub type Result<T> = ::std::result::Result<T, TgTuiError>;
+
+macro_rules! bail_err {
+    ($e:expr) => {{
+        return Err($e.into());
+    }};
 }

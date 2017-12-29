@@ -16,7 +16,8 @@ config = "0.7.0"
 # cursive >=0.7.3 <=0.7.4 use usize::min (from Ord trait), which requires Rust >=1.21
 cursive = { version = "<=0.7.2", default-features = false }
 env_logger = "0.4.3"
-error-chain = "0.11.0"
+failure = "0.1.1"
+failure_derive = "0.1.1"
 lazy_static = "1.0.0"
 maplit = "1.0.0"
 pom = "1.1.0"

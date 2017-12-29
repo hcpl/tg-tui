@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use cursive::Cursive;
 
-use error::{self, ErrorKind};
+use error::{self, TgTuiError};
 use mode::Mode;
 
 
@@ -89,9 +89,9 @@ impl Bindings {
 
     pub fn get(&self, mode: Mode, binding: &str) -> error::Result<&str> {
         let mode_bindings = self.bindings.get(&mode)
-            .ok_or(ErrorKind::BindingModeNonRegisterable(mode))?;
+            .ok_or(TgTuiError::BindingModeNonRegisterable { mode })?;
         let callback_name = mode_bindings.get(binding)
-            .ok_or(ErrorKind::BindingNotFound(mode, binding.to_owned()))?;
+            .ok_or(TgTuiError::BindingNotFound { mode, binding: binding.to_owned() })?;
 
         Ok(callback_name)
     }
@@ -99,14 +99,14 @@ impl Bindings {
     pub fn get_callback(&self, mode: Mode, binding: &str) -> error::Result<&BoxedSimpleCallback> {
         let callback_name = self.get(mode, binding)?;
         let callback = CALLBACKS_NAMES.get(callback_name)
-            .ok_or(ErrorKind::InvalidCallbackName(callback_name.to_owned()))?;
+            .ok_or(TgTuiError::InvalidCallbackName { callback_name: callback_name.to_owned() })?;
 
         Ok(&**callback)
     }
 
     pub fn set(&mut self, mode: Mode, binding: &str, callback_name: &str) -> error::Result<()> {
         let mode_bindings = self.bindings.get_mut(&mode)
-            .ok_or(ErrorKind::BindingModeNonRegisterable(mode))?;
+            .ok_or(TgTuiError::BindingModeNonRegisterable { mode })?;
         mode_bindings.insert(binding.to_owned(), callback_name.to_owned());
 
         Ok(())

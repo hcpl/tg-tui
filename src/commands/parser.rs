@@ -1,10 +1,10 @@
 use std::iter::FromIterator;
 
+use failure;
 use pom::{Parser, TextInput};
 use pom::parser::*;
 
 use commands::Command;
-use error;
 
 
 fn space() -> Parser<char, ()> {
@@ -24,9 +24,9 @@ fn command() -> Parser<char, (String, Vec<String>)> {
 }
 
 
-pub fn parse_command<C: Command>(input: &str) -> error::Result<C> {
+pub fn parse_command<C: Command>(input: &str) -> Result<C, failure::Error> {
     let mut input = TextInput::new(input);
     let (command, args) = command().parse(&mut input)?;
 
-    C::try_from_str(&command, args.iter().map(String::as_str))
+    C::try_from_str(&command, args.iter().map(String::as_str)).map_err(Into::into)
 }

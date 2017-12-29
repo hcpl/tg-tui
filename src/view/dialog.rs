@@ -7,7 +7,7 @@ use cursive::views::{BoxView, IdView, LinearLayout, OnEventView, TextArea, TextV
 use action::Action;
 use commands::{Command, CommandImpl, parse_command};
 use cursive_views::messages_view::MessagesView;
-use error::{self, ErrorKind};
+use error::{self, TgTuiError};
 use mode::Mode;
 use utils;
 
@@ -169,15 +169,18 @@ impl Dialog {
                             v.on_event(Event::Key(Key::Backspace));
                         }
                     },
-                    Err(error::Error(ErrorKind::UndefinedCommand(cmd), _)) => {
-                        v.set_content(format!("Not a command: {}", cmd));
-                        v.find_id("dialog", |d: &mut OnEventView<Dialog>| {
-                            d.with_view_mut(|d| {
-                                d.mode = Mode::Normal;
+                    Err(e) => {
+                        if let Some(&TgTuiError::UndefinedCommand { ref cmd }) = e.downcast_ref() {
+                            v.set_content(format!("Not a command: {}", cmd));
+                            v.find_id("dialog", |d: &mut OnEventView<Dialog>| {
+                                d.with_view_mut(|d| {
+                                    d.mode = Mode::Normal;
+                                });
                             });
-                        });
+                        } else {
+                            panic!("cannot handle this error in callback");
+                        }
                     },
-                    Err(_) => panic!("cannot handle this error in callback"),
                 }
 
                 Some(EventResult::Consumed(callback))

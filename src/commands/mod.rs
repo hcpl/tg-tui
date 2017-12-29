@@ -5,7 +5,7 @@ pub use self::parser::parse_command;
 
 use cursive::Cursive;
 
-use error::{self, ErrorKind};
+use error::{self, TgTuiError};
 
 
 pub trait Command: Sized {
@@ -22,7 +22,7 @@ pub trait Command: Sized {
         // Trait docs are nicer with "args" than "_args"
         let _ = args;
 
-        bail!(ErrorKind::UndefinedCommand(command_name.to_owned()))
+        bail_err!(TgTuiError::UndefinedCommand { cmd: command_name.to_owned() })
     }
 }
 
@@ -56,7 +56,7 @@ impl Command for CommandImpl {
             "write" | "w" => CommandKind::Write,
             "quit" | "q" => CommandKind::Quit,
 
-            _ => bail!(ErrorKind::UndefinedCommand(command_name.to_owned())),
+            _ => bail_err!(TgTuiError::UndefinedCommand { cmd: command_name.to_owned() }),
         };
 
         Ok(CommandImpl {
@@ -80,16 +80,16 @@ impl Command for Vec<CommandImpl> {
     {
         let commands = match CommandImpl::try_from_str(command_name, args) {
             Ok(cmd) => vec![cmd],
-            Err(error::Error(ErrorKind::UndefinedCommand(cmd_name), _)) => {
+            Err(TgTuiError::UndefinedCommand { cmd: cmd_name }) => {
                 assert_eq!(cmd_name, command_name);
 
                 match command_name {
                     "wq" => compound_command(&[CommandKind::Write, CommandKind::Quit]),
 
-                    _ => bail!(ErrorKind::UndefinedCommand(cmd_name)),
+                    _ => bail_err!(TgTuiError::UndefinedCommand { cmd: cmd_name }),
                 }
             },
-            Err(other_error) => bail!(other_error),
+            Err(other_error) => bail_err!(other_error),
         };
 
         Ok(commands)

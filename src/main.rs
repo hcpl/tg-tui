@@ -6,8 +6,9 @@ extern crate config;
 #[macro_use]
 extern crate cursive;
 extern crate env_logger;
+extern crate failure;
 #[macro_use]
-extern crate error_chain;
+extern crate failure_derive;
 #[macro_use]
 extern crate lazy_static;
 #[macro_use]
@@ -50,6 +51,8 @@ compile_error!("Exactly one backend must be used with this crate. \
         `features = [\"pancurses-backend\"]`
         `features = [\"termion-backend\"]`");
 
+#[macro_use]
+mod error;
 
 mod action;
 mod app_config;
@@ -58,14 +61,13 @@ mod async;
 mod bindings;
 mod cursive_views;
 mod commands;
-mod error;
 mod mode;
 mod utils;
 mod view;
 
 
-fn run() -> error::Result<()> {
-    env_logger::init();
+fn run() -> Result<(), failure::Error> {
+    env_logger::init()?;
 
     let mut app_config = args::process_args()?;
     let mut siv = view::create_cursive_session(&mut app_config)?;
@@ -81,4 +83,6 @@ fn run() -> error::Result<()> {
     Ok(())
 }
 
-quick_main!(run);
+fn main() {
+    run().unwrap();
+}
