@@ -15,6 +15,7 @@ extern crate lazy_static;
 extern crate maplit;
 extern crate pom;
 extern crate rand;
+extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 extern crate structopt;

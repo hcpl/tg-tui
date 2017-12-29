@@ -3,6 +3,7 @@ use std::ops;
 use std::sync::Arc;
 
 use cursive::Cursive;
+use serde::{Serialize, Serializer, Deserialize, Deserializer};
 
 use error::{self, TgTuiError};
 use mode::Mode;
@@ -55,9 +56,27 @@ lazy_static! {
 
 type ModeBindings = HashMap<String, String>;
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug)]
 pub struct Bindings {
     bindings: HashMap<Mode, ModeBindings>,
+}
+
+impl Serialize for Bindings {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where S: Serializer
+    {
+        self.bindings.serialize(serializer)
+    }
+}
+
+impl<'de> Deserialize<'de> for Bindings {
+    fn deserialize<D>(deserializer: D) -> Result<Bindings, D::Error>
+        where D: Deserializer<'de>
+    {
+        let bindings = HashMap::<_, _>::deserialize(deserializer)?;
+
+        Ok(Bindings { bindings })
+    }
 }
 
 impl Bindings {
@@ -82,9 +101,7 @@ impl Bindings {
             Mode::Visual => visual,
         };
 
-        Bindings {
-            bindings: bindings,
-        }
+        Bindings { bindings }
     }
 
     pub fn get(&self, mode: Mode, binding: &str) -> error::Result<&str> {

@@ -15,7 +15,6 @@ const DEFAULT_BINDINGS_FILENAME: &'static str = "bindings.toml";
 
 
 #[derive(Debug, StructOpt)]
-#[structopt(name = "", about = "")]
 struct ArgsConfig {
     #[structopt(long = "config", help = "Config file")]
     config_file: Option<String>,
@@ -36,7 +35,7 @@ pub fn process_args() -> Result<AppConfig, failure::Error> {
     process_arg("phone-number", &args_config.phone_number, &mut config)?;
 
     let maybe_bindings_path = get_maybe_config_path(DEFAULT_BINDINGS_FILENAME, &args_config.bindings_file)?;
-    let bindings: HashMap<String, String> = process_config_file(maybe_bindings_path)?
+    let bindings: HashMap<String, HashMap<String, String>> = process_config_file(maybe_bindings_path)?
         // We're going to discard non key-value configs because:
         // - They are incorrect (at least for now, in future this restriction may be lifted, but
         //   this is unlikely - those are bindings after all);
@@ -46,12 +45,8 @@ pub fn process_args() -> Result<AppConfig, failure::Error> {
         .try_into()
         .unwrap_or(HashMap::new());
     config.set("bindings", bindings)?;
-    println!("{:#?}", config);
 
-    let x = config.try_into();
-    println!("{:#?}", x);
-
-    x.map_err(Into::into)
+    config.try_into().map_err(Into::into)
 }
 
 fn get_maybe_config_path(default_filename: &str,
