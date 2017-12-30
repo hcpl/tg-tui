@@ -7,24 +7,15 @@ rust:
   - nightly
 
 env:
-  global:
-    - RUST_BACKTRACE=1
-  matrix:
-    - FEATURES=""
+  - RUST_BACKTRACE=1
 
 matrix:
   allow_failures:
     - rust: nightly
-  include:
-    # Test different backends only on limited amount of configurations - we don't need more
-    - rust: stable
-      env: FEATURES="--no-default-features --features ncurses-backend"
-    - rust: stable
-      env: FEATURES="--no-default-features --features pancurses-backend"
-    - rust: stable
-      env: FEATURES="--no-default-features --features termion-backend"
-    - rust: stable
-      env: FEATURES="--no-default-features --features blt-backend"
 
 script:
-  - cargo test --verbose "${FEATURES}"
+  - cargo test --verbose
+  - cargo test --verbose --no-default-features --features ncurses-backend
+  - cargo test --verbose --no-default-features --features panncurses-backend
+  - cargo test --verbose --no-default-features --features ncurses-backend
+  - cargo test --verbose --no-default-features --features blt-backend
