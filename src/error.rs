@@ -3,23 +3,23 @@ use mode::Mode;
 
 #[derive(Debug, Fail)]
 pub enum TgTuiError {
-    #[fail(display = "no bindings can be registered for this mode: {:?}", mode)]
+    #[fail(display = "no bindings can be registered for {:?} mode", mode)]
     BindingModeNonRegisterable {
         mode: Mode,
     },
 
-    #[fail(display = "no binding named {:?} found for mode {:?}", binding, mode)]
+    #[fail(display = "no binding named {:?} found for {:?} mode", binding, mode)]
     BindingNotFound {
         mode: Mode,
         binding: String,
     },
 
-    #[fail(display = "invalid callback name: {}", callback_name)]
+    #[fail(display = "invalid callback name: {:?}", callback_name)]
     InvalidCallbackName {
         callback_name: String,
     },
 
-    #[fail(display = "undefined command: {}", cmd)]
+    #[fail(display = "undefined command: {:?}", cmd)]
     UndefinedCommand {
         cmd: String,
     },

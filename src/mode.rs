@@ -36,7 +36,8 @@ impl<'de> Deserialize<'de> for Mode {
             "insert" => Mode::Insert,
             "visual" => Mode::Visual,
             "command_line" => Mode::CommandLine,
-            x => return Err(D::Error::invalid_value(de::Unexpected::Str(x), &"values!!!")),
+            x => bail_err!(D::Error::invalid_value(de::Unexpected::Str(x),
+                &"either of \"normal\", \"insert\", \"visual\" or \"command_line\"")),
         };
 
         Ok(mode)

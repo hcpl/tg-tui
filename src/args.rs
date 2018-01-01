@@ -27,6 +27,7 @@ struct ArgsConfig {
 }
 
 
+/// Process arguments passed to this process and generate an application config.
 pub fn process_args() -> Result<AppConfig, failure::Error> {
     let args_config = ArgsConfig::from_args();
 

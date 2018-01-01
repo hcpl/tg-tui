@@ -10,6 +10,8 @@ use error;
 use utils::strtime;
 
 
+/// A Cursive view for displaying messages in default WeeChat style: date-time,
+/// nickname of the user that triggered the action, and the action contents.
 pub struct MessagesView {
     children: Vec<MessagesViewChild>,
 
@@ -20,9 +22,11 @@ pub struct MessagesView {
 }
 
 impl MessagesView {
+    /// Create an empty message view.
     pub fn new() -> Self {
         MessagesView {
             children: Vec::new(),
+
             scrollbase: ScrollBase::new(),
             focus: 0,
             rows: None,
@@ -30,6 +34,7 @@ impl MessagesView {
         }
     }
 
+    /// Add an `Action` to the message stream.
     pub fn add_action(&mut self, action: Action) {
         let msgs_view_child = MessagesViewChild::Action(action);
 
@@ -37,26 +42,28 @@ impl MessagesView {
         self.children.push(msgs_view_child);
     }
 
+    /// The chaining version of `add_action()`.
     pub fn action(self, action: Action) -> Self {
         self.with(|s| s.add_action(action))
     }
 
+    /// Add a message delimiter, useful mark messages below it as unread.
     pub fn add_delimiter(&mut self) {
         self.children.push(MessagesViewChild::Delimiter);
     }
 
+    /// The chaining version of `add_delimiter()`.
     pub fn delimiter(self) -> Self {
         self.with(|s| s.add_delimiter())
     }
 
+    // FIXME: Do computations lazily!
+    /// Compute element dimensions and positions to draw contents of this
+    /// `MessageView`.
     fn compute_rows(&mut self, available_size: &Vec2) -> error::Result<()> {
         let max_second_column_width = self.children.iter()
             .map(|msgs_view_child| match *msgs_view_child {
-                MessagesViewChild::Action(ref action) => match *action {
-                    Action::Online { ref username, .. } => username.len(),
-                    Action::Offline { ref username, .. } => username.len(),
-                    Action::Message { ref username, .. } => username.len(),
-                },
+                MessagesViewChild::Action(ref action) => action.username().map(str::len).unwrap_or(0),
                 MessagesViewChild::Delimiter => 0,
             })
             .max()
@@ -123,7 +130,7 @@ impl View for MessagesView {
 
     fn layout(&mut self, size: Vec2) {
         if self.needs_relayout {
-            self.compute_rows(&size).unwrap();
+            self.compute_rows(&size).unwrap(); // FIXME: Deal with Results here more gracefully
             self.needs_relayout = false;
         }
 

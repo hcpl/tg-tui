@@ -1,6 +1,7 @@
 use bindings::Bindings;
 
 
+/// Config used for the lifetime of an application process.
 #[derive(Debug, Deserialize)]
 pub struct AppConfig {
     #[serde(default)]
