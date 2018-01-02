@@ -1,5 +1,6 @@
 use std::cmp;
 
+use chrono::{DateTime, Local};
 use cursive::{Printer, With};
 use cursive::vec::Vec2;
 use cursive::view::{ScrollBase, View};
@@ -79,58 +80,41 @@ impl ActionsView {
 
         let mut new_rows = Vec::new();
 
+        // Use a fn-macro combo to circumvent mutable borrowing and lifetime issues when using
+        // closures.
+
+        macro_rules! insert_rows {
+            ($date_time:expr, $second_column_data:expr, $content:expr) => {
+                insert_rows_impl(
+                    &mut new_rows,
+                    max_second_column_width,
+                    content_width,
+                    $date_time,
+                    $second_column_data,
+                    $content);
+            };
+        }
+
         for msgs_view_child in self.children.iter() {
             match *msgs_view_child {
                 ActionsViewChild::Action(ref action) => match *action {
                     Action::Online { ref date_time, ref username } => {
-                        new_rows.push(format!("{} {:>width$} | {} is online",
-                            strtime(date_time), "-->", username, width=max_second_column_width));
+                        insert_rows!(date_time, "-->", &format!("{} is online", username));
                     },
                     Action::Offline { ref date_time, ref username } => {
-                        new_rows.push(format!("{} {:>width$} | {} went offline",
-                            strtime(date_time), "<--", username, width=max_second_column_width));
+                        insert_rows!(date_time, "<--", &format!("{} is offline", username));
                     },
                     Action::Message { ref date_time, ref username, ref text } => {
-                        let stime = strtime(date_time);
-
-                        for (i, msg_content_row) in textwrap::wrap_iter(text, content_width).enumerate() {
-                            let fmt_row = if i == 0 {
-                                format!("{} {:>width$} | {}",
-                                    stime, username, msg_content_row, width=max_second_column_width)
-                            } else {
-                                format!("{:8} {:>width$} | {}",
-                                    "", "", msg_content_row, width=max_second_column_width)
-                            };
-
-                            new_rows.push(fmt_row);
-                        }
+                        insert_rows!(date_time, username, text);
                     },
                     Action::SelfConnect { ref date_time } => {
-                        new_rows.push(format!("{} {:>width$} | {}",
-                            strtime(date_time), "--", "telegram: connected to server", width=max_second_column_width));
+                        insert_rows!(date_time, "--", "telegram: connected to server");
                     },
                     Action::SelfDisconnect { ref date_time } => {
-                        new_rows.push(format!("{} {:>width$} | {}",
-                            strtime(date_time), "--", "telegram: disconnected from server", width=max_second_column_width));
+                        insert_rows!(date_time, "--", "telegram: disconnected from server");
                     },
                     Action::CommandOutput { ref date_time, ref command, ref output } => {
-                        let stime = strtime(date_time);
-
-                        new_rows.push(format!("{} {:>width$} | {}",
-                            strtime(date_time), "", "", width=max_second_column_width));
-
-
-                        for (i, cmd_content_row) in textwrap::wrap_iter(output, content_width).enumerate() {
-                            let fmt_row = if i == 0 {
-                                format!("{} {:>width$} | {}",
-                                    stime, "", cmd_content_row, width=max_second_column_width)
-                            } else {
-                                format!("{:8} {:>width$} | {}",
-                                    "", "", cmd_content_row, width=max_second_column_width)
-                            };
-
-                            new_rows.push(fmt_row);
-                        }
+                        insert_rows!(date_time, "", output);
                     },
                 },
                 ActionsViewChild::Delimiter => {
@@ -142,6 +126,29 @@ impl ActionsView {
         self.rows = Some(new_rows);
 
         Ok(())
+    }
+}
+
+fn insert_rows_impl(
+    rows: &mut Vec<String>,
+    max_second_column_width: usize,
+    content_width: usize,
+    date_time: &DateTime<Local>,
+    second_column_data: &str,
+    content: &str,
+) {
+    let stime = strtime(date_time);
+
+    for (i, content_row) in textwrap::wrap_iter(content, content_width).enumerate() {
+        let fmt_row = if i == 0 {
+            format!("{} {:>width$} | {}",
+                stime, second_column_data, content_row, width=max_second_column_width)
+        } else {
+            format!("{:8} {:>width$} | {}",
+                "", "", content_row, width=max_second_column_width)
+        };
+
+        rows.push(fmt_row);
     }
 }
 
