@@ -7,7 +7,6 @@ use cursive::view::{ScrollBase, View};
 use textwrap;
 
 use action::Action;
-use error;
 use utils::strtime;
 
 
@@ -140,7 +139,7 @@ fn insert_rows_impl(
     second_column_data: &str,
     content: &str,
 ) {
-    for (i, content_row) in textwrap::wrap_iter(content, content_width).enumerate() {
+    for (i, content_row) in content.lines().flat_map(|line| textwrap::wrap_iter(line, content_width)).enumerate() {
         let fmt_row = if i == 0 {
             format!("{} {:>width$} | {}",
                 strtime(date_time), second_column_data, content_row, width=max_second_column_width)
