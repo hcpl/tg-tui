@@ -59,9 +59,10 @@ impl ActionsView {
     }
 
     // FIXME: Do computations lazily!
+    // FIXME: Too many magic constants!
     /// Compute element dimensions and positions to draw contents of this
     /// `ActionsView`.
-    fn compute_rows(&mut self, available_size: &Vec2) -> error::Result<()> {
+    fn compute_rows(&mut self, available_size: &Vec2) {
         let max_second_column_width = self.children.iter()
             .map(|msgs_view_child| match *msgs_view_child {
                 ActionsViewChild::Action(ref action) =>
@@ -72,16 +73,20 @@ impl ActionsView {
             .map(|m| cmp::max(m, 3))    // 3 for "-->" and "<--"
             .unwrap_or(3);
 
-        let content_width = available_size.x
+        let mut content_width = available_size.x
             .saturating_sub(8)     // "%H:%M:%S" time
             .saturating_sub(1)     // a space
             .saturating_sub(max_second_column_width)
             .saturating_sub(3);    // " | "
 
+        if self.scrollbase.scrollable() {
+            content_width = content_width.saturating_sub(2);    // scrollbar width
+        }
+
         let mut new_rows = Vec::new();
 
         // Use a fn-macro combo to circumvent mutable borrowing and lifetime issues when using
-        // closures.
+        // closures. Macro alone was not choosed to reduce the LoC count of this method.
 
         macro_rules! insert_rows {
             ($date_time:expr, $second_column_data:expr, $content:expr) => {
@@ -114,7 +119,7 @@ impl ActionsView {
                         insert_rows!(date_time, "--", "telegram: disconnected from server");
                     },
                     Action::CommandOutput { ref date_time, ref command, ref output } => {
-                        insert_rows!(date_time, "", output);
+                        insert_rows!(date_time, "", &format!("(system) {}:\n{}", command, output));
                     },
                 },
                 ActionsViewChild::Delimiter => {
@@ -124,8 +129,6 @@ impl ActionsView {
         }
 
         self.rows = Some(new_rows);
-
-        Ok(())
     }
 }
 
@@ -137,12 +140,10 @@ fn insert_rows_impl(
     second_column_data: &str,
     content: &str,
 ) {
-    let stime = strtime(date_time);
-
     for (i, content_row) in textwrap::wrap_iter(content, content_width).enumerate() {
         let fmt_row = if i == 0 {
             format!("{} {:>width$} | {}",
-                stime, second_column_data, content_row, width=max_second_column_width)
+                strtime(date_time), second_column_data, content_row, width=max_second_column_width)
         } else {
             format!("{:8} {:>width$} | {}",
                 "", "", content_row, width=max_second_column_width)
@@ -165,7 +166,7 @@ impl View for ActionsView {
 
     fn layout(&mut self, size: Vec2) {
         if self.needs_relayout {
-            self.compute_rows(&size).unwrap(); // FIXME: Deal with Results here more gracefully
+            self.compute_rows(&size);
             self.needs_relayout = false;
         }
 
