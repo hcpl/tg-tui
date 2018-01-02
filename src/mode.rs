@@ -10,6 +10,8 @@ pub enum Mode {
     CommandLine,
 }
 
+// Serialize `Mode` as strings
+
 impl Serialize for Mode {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer

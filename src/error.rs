@@ -23,6 +23,11 @@ pub enum TgTuiError {
     UndefinedCommand {
         cmd: String,
     },
+
+    #[fail(display = "`chrono` date-time format {:?} contains errors", format)]
+    ChronoFormat {
+        format: String,
+    },
 }
 
 pub type Result<T> = ::std::result::Result<T, TgTuiError>;
