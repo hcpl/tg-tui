@@ -6,7 +6,7 @@ use cursive::views::{BoxView, IdView, LinearLayout, OnEventView, TextArea, TextV
 
 use action::Action;
 use commands::{Command, CommandImpl, parse_command};
-use cursive_views::messages_view::MessagesView;
+use cursive_views::actions_view::ActionsView;
 use error::{self, TgTuiError};
 use mode::Mode;
 use utils;
@@ -93,9 +93,9 @@ impl Dialog {
         dialog_title
     }
 
-    fn create_messages_display_area() -> BoxView<IdView<MessagesView>> {
+    fn create_messages_display_area() -> BoxView<IdView<ActionsView>> {
         // TODO: fetch real messages
-        BoxView::with_full_screen(MessagesView::new()
+        BoxView::with_full_screen(ActionsView::new()
             .action(Action::online(
                 "foo",
             ))
@@ -116,8 +116,11 @@ impl Dialog {
                  pariatur. Excepteur sint occaecat cupidatat non proident, sunt in \
                  culpa qui officia deserunt mollit anim id est laborum.",
             ))
+            .action(Action::self_connect())
+            .action(Action::self_disconnect())
+            .action(Action::command_output("peers_list", "foo, bar, baz"))
             .delimiter()
-            .with_id("messages-view"))
+            .with_id("actions-view"))
     }
 
     fn create_status_bar() -> error::Result<IdView<TextView>> {

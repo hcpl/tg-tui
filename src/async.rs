@@ -4,7 +4,7 @@ use cursive::Cursive;
 use rand::{self, Rng};
 
 use action::Action;
-use cursive_views::messages_view::MessagesView;
+use cursive_views::actions_view::ActionsView;
 
 
 pub fn install_async_handlers(siv: &mut Cursive) {
@@ -31,7 +31,7 @@ fn add_data(siv: &mut Cursive) {
         .take(text_len)
         .collect::<String>();
 
-    siv.call_on_id("messages-view", |view: &mut MessagesView| {
+    siv.call_on_id("actions-view", |view: &mut ActionsView| {
         view.add_action(Action::message(&nickname, &text));
     });
 }

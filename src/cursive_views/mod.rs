@@ -1,1 +1,1 @@
-pub mod messages_view;
+pub mod actions_view;

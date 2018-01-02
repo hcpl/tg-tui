@@ -10,10 +10,10 @@ use error;
 use utils::strtime;
 
 
-/// A Cursive view for displaying messages in default WeeChat style: date-time,
+/// A Cursive view for displaying user actions in default WeeChat style: date-time,
 /// nickname of the user that triggered the action, and the action contents.
-pub struct MessagesView {
-    children: Vec<MessagesViewChild>,
+pub struct ActionsView {
+    children: Vec<ActionsViewChild>,
 
     scrollbase: ScrollBase,
     focus: usize,
@@ -21,10 +21,10 @@ pub struct MessagesView {
     needs_relayout: bool,
 }
 
-impl MessagesView {
+impl ActionsView {
     /// Create an empty message view.
     pub fn new() -> Self {
-        MessagesView {
+        ActionsView {
             children: Vec::new(),
 
             scrollbase: ScrollBase::new(),
@@ -34,9 +34,9 @@ impl MessagesView {
         }
     }
 
-    /// Add an `Action` to the message stream.
+    /// Add a `Action` to the message stream.
     pub fn add_action(&mut self, action: Action) {
-        let msgs_view_child = MessagesViewChild::Action(action);
+        let msgs_view_child = ActionsViewChild::Action(action);
 
         self.needs_relayout = true;
         self.children.push(msgs_view_child);
@@ -47,9 +47,9 @@ impl MessagesView {
         self.with(|s| s.add_action(action))
     }
 
-    /// Add a message delimiter, useful mark messages below it as unread.
+    /// Add a delimiter, useful to mark actions below it as unseen.
     pub fn add_delimiter(&mut self) {
-        self.children.push(MessagesViewChild::Delimiter);
+        self.children.push(ActionsViewChild::Delimiter);
     }
 
     /// The chaining version of `add_delimiter()`.
@@ -59,18 +59,19 @@ impl MessagesView {
 
     // FIXME: Do computations lazily!
     /// Compute element dimensions and positions to draw contents of this
-    /// `MessageView`.
+    /// `ActionsView`.
     fn compute_rows(&mut self, available_size: &Vec2) -> error::Result<()> {
         let max_second_column_width = self.children.iter()
             .map(|msgs_view_child| match *msgs_view_child {
-                MessagesViewChild::Action(ref action) => action.username().map(str::len).unwrap_or(0),
-                MessagesViewChild::Delimiter => 0,
+                ActionsViewChild::Action(ref action) =>
+                    action.username().map(str::len).unwrap_or(0),
+                ActionsViewChild::Delimiter => 0,
             })
             .max()
             .map(|m| cmp::max(m, 3))    // 3 for "-->" and "<--"
             .unwrap_or(3);
 
-        let msg_content_width = available_size.x
+        let content_width = available_size.x
             .saturating_sub(8)     // "%H:%M:%S" time
             .saturating_sub(1)     // a space
             .saturating_sub(max_second_column_width)
@@ -80,7 +81,7 @@ impl MessagesView {
 
         for msgs_view_child in self.children.iter() {
             match *msgs_view_child {
-                MessagesViewChild::Action(ref action) => match *action {
+                ActionsViewChild::Action(ref action) => match *action {
                     Action::Online { ref date_time, ref username } => {
                         new_rows.push(format!("{} {:>width$} | {} is online",
                             strtime(date_time), "-->", username, width=max_second_column_width));
@@ -92,7 +93,7 @@ impl MessagesView {
                     Action::Message { ref date_time, ref username, ref text } => {
                         let stime = strtime(date_time);
 
-                        for (i, msg_content_row) in textwrap::wrap_iter(text, msg_content_width).enumerate() {
+                        for (i, msg_content_row) in textwrap::wrap_iter(text, content_width).enumerate() {
                             let fmt_row = if i == 0 {
                                 format!("{} {:>width$} | {}",
                                     stime, username, msg_content_row, width=max_second_column_width)
@@ -104,8 +105,35 @@ impl MessagesView {
                             new_rows.push(fmt_row);
                         }
                     },
+                    Action::SelfConnect { ref date_time } => {
+                        new_rows.push(format!("{} {:>width$} | {}",
+                            strtime(date_time), "--", "telegram: connected to server", width=max_second_column_width));
+                    },
+                    Action::SelfDisconnect { ref date_time } => {
+                        new_rows.push(format!("{} {:>width$} | {}",
+                            strtime(date_time), "--", "telegram: disconnected from server", width=max_second_column_width));
+                    },
+                    Action::CommandOutput { ref date_time, ref command, ref output } => {
+                        let stime = strtime(date_time);
+
+                        new_rows.push(format!("{} {:>width$} | {}",
+                            strtime(date_time), "", "", width=max_second_column_width));
+
+
+                        for (i, cmd_content_row) in textwrap::wrap_iter(output, content_width).enumerate() {
+                            let fmt_row = if i == 0 {
+                                format!("{} {:>width$} | {}",
+                                    stime, "", cmd_content_row, width=max_second_column_width)
+                            } else {
+                                format!("{:8} {:>width$} | {}",
+                                    "", "", cmd_content_row, width=max_second_column_width)
+                            };
+
+                            new_rows.push(fmt_row);
+                        }
+                    },
                 },
-                MessagesViewChild::Delimiter => {
+                ActionsViewChild::Delimiter => {
                     new_rows.push(format!("{:->width$}", "", width=available_size.x))
                 },
             }
@@ -117,7 +145,7 @@ impl MessagesView {
     }
 }
 
-impl View for MessagesView {
+impl View for ActionsView {
     fn draw(&self, printer: &Printer) {
         self.scrollbase.draw(printer, |printer, i| {
             if let Some(ref rows) = self.rows {
@@ -144,7 +172,7 @@ impl View for MessagesView {
 }
 
 
-pub enum MessagesViewChild {
+pub enum ActionsViewChild {
     Action(Action),
     Delimiter,
 }
