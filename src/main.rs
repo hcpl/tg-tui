@@ -5,6 +5,8 @@ extern crate clap;
 extern crate config;
 #[macro_use]
 extern crate cursive;
+#[macro_use]
+extern crate enum_map;
 extern crate env_logger;
 extern crate failure;
 #[macro_use]

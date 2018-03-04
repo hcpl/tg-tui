@@ -3,7 +3,7 @@ mod dialog;
 
 use cursive::Cursive;
 use cursive::event::Event;
-use cursive::theme::{BorderStyle, BaseColor, Color, Palette, Theme};
+use cursive::theme::{BorderStyle, BaseColor, Color, PaletteColor, Theme};
 use cursive::view::Identifiable;
 use cursive::views::{BoxView, Dialog, EditView, IdView, TextView};
 
@@ -41,18 +41,18 @@ fn custom_theme() -> Theme {
     Theme {
         shadow: false,
         borders: BorderStyle::Simple,
-        colors: Palette {
-            background: Color::TerminalDefault,
-            shadow: Color::Dark(BaseColor::Black),
-            view: Color::TerminalDefault,
-            primary: Color::Dark(BaseColor::White),
-            secondary: Color::Dark(BaseColor::Cyan),
-            tertiary: Color::Light(BaseColor::Magenta),
-            title_primary: Color::Dark(BaseColor::Red),
-            title_secondary: Color::Dark(BaseColor::Yellow),
-            highlight: Color::Dark(BaseColor::Green),
-            highlight_inactive: Color::Dark(BaseColor::Blue),
-        }
+        palette: enum_map! {
+            PaletteColor::Background => Color::TerminalDefault,
+            PaletteColor::Shadow => Color::Dark(BaseColor::Black),
+            PaletteColor::View => Color::TerminalDefault,
+            PaletteColor::Primary => Color::Dark(BaseColor::White),
+            PaletteColor::Secondary => Color::Dark(BaseColor::Cyan),
+            PaletteColor::Tertiary => Color::Light(BaseColor::Magenta),
+            PaletteColor::TitlePrimary => Color::Dark(BaseColor::Red),
+            PaletteColor::TitleSecondary => Color::Dark(BaseColor::Yellow),
+            PaletteColor::Highlight => Color::Dark(BaseColor::Green),
+            PaletteColor::HighlightInactive => Color::Dark(BaseColor::Blue),
+        },
     }
 }
 
