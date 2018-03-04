@@ -68,7 +68,7 @@ mod view;
 
 
 fn run() -> Result<(), failure::Error> {
-    env_logger::init()?;
+    env_logger::try_init()?;
 
     let mut app_config = args::process_args()?;
     let mut siv = view::create_cursive_session(&mut app_config)?;
